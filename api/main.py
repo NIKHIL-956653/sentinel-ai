@@ -6,7 +6,7 @@ from api.routes.news import router
 app = FastAPI(
     title="SENTINEL AI",
     description="Military Intelligence & News Verification Platform",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # CORS middleware
@@ -26,10 +26,12 @@ async def root():
     return {
         "service": "SENTINEL AI 🕵️",
         "status": "ONLINE",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "database": "MongoDB ✅",
         "endpoints": {
             "news": "/api/v1/news",
             "health": "/api/v1/health",
+            "recent": "/api/v1/recent",
             "docs": "/docs"
         }
     }

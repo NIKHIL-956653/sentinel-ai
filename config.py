@@ -14,7 +14,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # OpenRouter Settings
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-OPENROUTER_MODEL = "mistralai/mistral-7b-instruct"
+OPENROUTER_MODEL = "google/gemma-3-4b-it:free"
 
 # Tavily Settings
 TAVILY_MAX_RESULTS = 3 if DEV_MODE else 10
