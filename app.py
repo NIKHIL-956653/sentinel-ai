@@ -368,13 +368,89 @@ if search_btn and query:
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Show articles
-                    if st.button(
-                        f"🔍 ANALYZE INTEL",
-                        key=f"btn_{i}"
-                    ):
-                        st.session_state.selected_story = story
-                        st.session_state.show_modal = True
+                    with st.expander(f"🔍 ANALYZE INTEL - {title[:40]}..."):
+
+                        # Story details
+                        st.markdown(f"""
+                        <div style="
+                            background: {theme['card_bg']};
+                            border: 2px solid {theme['primary']};
+                            border-radius: 10px;
+                            padding: 20px;
+                            font-family: 'Courier New', monospace;
+                            box-shadow: 0 0 20px {theme['primary']}44;
+                        ">
+                            <h3 style="color: {theme['primary']};">
+                                🕵️ INTELLIGENCE ANALYSIS
+                            </h3>
+                            <hr style="border-color: {theme['primary']};">
+                            <p style="color: #ffffff;">
+                                📰 {story['titles'][0]}
+                            </p>
+                            <p style="color: {theme['primary']};">
+                                🌐 Sources: {', '.join(story['sources'])}
+                            </p>
+                            <p style="color: {theme['primary']};">
+                                📊 Confidence: {story['confidence']}
+                            </p>
+                            <p style="color: {theme['primary']};">
+                                🏆 Verdict: {story.get('verdict', 'UNKNOWN')}
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # AI Summary
+                        st.markdown(f"### 🤖 AI INTELLIGENCE BRIEF")
+
+                        with st.spinner("🕵️ Analyzing intel..."):
+                            from tools.summarizer import summarize_article
+                            article = story["articles"][0]
+                            summary = summarize_article(
+                                article["title"],
+                                article.get("content", ""),
+                                article["source"]
+                            )
+
+                        st.markdown(f"""
+                        <div style="
+                            background: {theme['card_bg']};
+                            border-left: 4px solid {theme['primary']};
+                            padding: 20px;
+                            border-radius: 5px;
+                            font-family: 'Courier New', monospace;
+                            color: #ffffff;
+                            white-space: pre-wrap;
+                        ">
+                            {summary}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # Source articles
+                        st.markdown("### 📰 SOURCE ARTICLES")
+                        for article in story["articles"]:
+                            st.markdown(f"""
+                            <div style="
+                                background: {theme['card_bg']};
+                                border: 1px solid {theme['border']};
+                                border-radius: 8px;
+                                padding: 15px;
+                                margin: 10px 0;
+                                font-family: 'Courier New', monospace;
+                            ">
+                                <p style="color: {theme['primary']};
+                                          font-weight: bold;">
+                                    📰 {article['title']}
+                                </p>
+                                <p style="color: #888888;">
+                                    🌐 {article['source']}
+                                </p>
+                                <a href="{article['url']}"
+                                   target="_blank"
+                                   style="color: {theme['primary']};">
+                                    🔗 Read Full Article
+                                </a>
+                            </div>
+                            """, unsafe_allow_html=True)
 
                 # Contradictions
                 if data["contradictions"]:
@@ -419,99 +495,6 @@ else:
         <p>"Middle East latest news"</p>
     </div>
     """, unsafe_allow_html=True)
-
-# Modal popup - outside everything!
-if st.session_state.get("show_modal"):
-    story = st.session_state.selected_story
-
-    st.markdown("---")
-    st.markdown(f"""
-    <div style="
-        background: rgba(0,0,0,0.95);
-        border: 2px solid {theme['primary']};
-        border-radius: 15px;
-        padding: 30px;
-        margin: 20px 0;
-        font-family: 'Courier New', monospace;
-        box-shadow: 0 0 30px {theme['primary']};
-    ">
-        <h2 style="color: {theme['primary']};">
-            🕵️ INTELLIGENCE ANALYSIS
-        </h2>
-        <hr style="border-color: {theme['primary']};">
-        <h3 style="color: #ffffff;">
-            📰 {story['titles'][0]}
-        </h3>
-        <p style="color: {theme['primary']};">
-            🌐 Sources: {', '.join(story['sources'])}
-        </p>
-        <p style="color: {theme['primary']};">
-            📊 Confidence: {story['confidence']}
-        </p>
-        <p style="color: {theme['primary']};">
-            🏆 Verdict: {story.get('verdict', 'UNKNOWN')}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # AI Summary
-    st.markdown("### 🤖 AI INTELLIGENCE BRIEF")
-
-    with st.spinner("🕵️ Analyzing intel..."):
-        from tools.summarizer import summarize_article
-        article = story["articles"][0]
-        summary = summarize_article(
-            article["title"],
-            article.get("content", ""),
-            article["source"]
-        )
-
-    st.markdown(f"""
-    <div style="
-        background: {theme['card_bg']};
-        border-left: 4px solid {theme['primary']};
-        padding: 20px;
-        border-radius: 5px;
-        font-family: 'Courier New', monospace;
-        color: #ffffff;
-        white-space: pre-wrap;
-    ">
-        {summary}
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Articles
-    st.markdown("### 📰 SOURCE ARTICLES")
-    for article in story["articles"]:
-        st.markdown(f"""
-        <div style="
-            background: {theme['card_bg']};
-            border: 1px solid {theme['border']};
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            font-family: 'Courier New', monospace;
-        ">
-            <p style="color: {theme['primary']};
-                      font-weight: bold;">
-                📰 {article['title']}
-            </p>
-            <p style="color: #888888;">
-                🌐 {article['source']}
-            </p>
-            <a href="{article['url']}"
-               target="_blank"
-               style="color: {theme['primary']};">
-                🔗 Read Full Article
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Close button
-    if st.button("❌ CLOSE ANALYSIS"):
-        st.session_state.show_modal = False
-        del st.session_state.selected_story
-        st.rerun()
 
 # Footer
 st.markdown("---")
