@@ -34,7 +34,7 @@ Format it clearly with the headers."""
                 "Content-Type": "application/json"
             },
             json={
-                "model": "google/gemma-3-4b-it:free",
+                "model": "openai/gpt-oss-120b",
                 "messages": [
                     {
                         "role": "user",
