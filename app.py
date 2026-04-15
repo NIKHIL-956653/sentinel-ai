@@ -69,13 +69,42 @@ st.set_page_config(
 )
 
 # Theme selector in MAIN page!
-col_t1, col_t2, col_t3 = st.columns([1,2,1])
-with col_t2:
+# Top navigation bar
+nav1, nav2, nav3, nav4, nav5 = st.columns([2,2,2,2,3])
+
+with nav1:
+    if st.button("📰 NEWS FEED",
+                  use_container_width=True):
+        st.session_state.page = "news"
+
+with nav2:
+    if st.button("🌍 COUNTRIES",
+                  use_container_width=True):
+        st.session_state.page = "countries"
+
+with nav3:
+    if st.button("🚀 WEAPONS",
+                  use_container_width=True):
+        st.session_state.page = "weapons"
+
+with nav4:
+    if st.button("👤 LEADERS",
+                  use_container_width=True):
+        st.session_state.page = "leaders"
+
+with nav5:
     selected_theme = st.selectbox(
-        "🎨 SELECT THEME",
+        "🎨",
         list(THEMES.keys()),
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
+
+# Default page
+if "page" not in st.session_state:
+    st.session_state.page = "news"
+
+st.markdown("---")
 
 theme = THEMES[selected_theme]
 
@@ -241,6 +270,167 @@ def show_news_ticker(stories: list):
     """, unsafe_allow_html=True)
 
 
+def show_country_profiles(theme):
+    """Country Military Profiles Page"""
+
+    st.markdown(f"""
+    <div style="
+        font-family: 'Courier New', monospace;
+        color: {theme['primary']};
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 20px;
+    ">
+        🌍 COUNTRY MILITARY PROFILES
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Country selector
+    countries = [
+        "Select Country...",
+        "United States", "Russia", "China",
+        "India", "UAE", "Israel", "Iran",
+        "Saudi Arabia", "Turkey", "Pakistan",
+        "United Kingdom", "France", "Germany",
+        "North Korea", "South Korea", "Japan"
+    ]
+
+    selected = st.selectbox(
+        "🌍 SELECT COUNTRY",
+        countries
+    )
+
+    if selected != "Select Country...":
+        with st.spinner(f"🔍 Fetching {selected} military profile..."):
+            from tools.wikipedia_tool import get_country_military_profile
+            profile = get_country_military_profile(selected)
+
+        # Display profile
+        st.markdown(f"""
+        <div style="
+            background: {theme['card_bg']};
+            border: 2px solid {theme['primary']};
+            border-radius: 15px;
+            padding: 30px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 20px {theme['primary']}44;
+        ">
+            <h2 style="color: {theme['primary']};">
+                🌍 {profile['country'].upper()}
+                MILITARY PROFILE
+            </h2>
+            <hr style="border-color: {theme['primary']};">
+            <p style="color: #ffffff; font-size: 1.1em;">
+                {profile['military_summary']}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Stats columns
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            st.markdown(f"""
+            <div style="
+                background: {theme['card_bg']};
+                border: 1px solid {theme['primary']};
+                border-radius: 10px;
+                padding: 15px;
+                text-align: center;
+                font-family: 'Courier New', monospace;
+            ">
+                <p style="color: {theme['primary']};">🪖 ARMY</p>
+                <p style="color: #ffffff; font-size: 1.2em;">
+                    {profile['army_strength']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c2:
+            st.markdown(f"""
+            <div style="
+                background: {theme['card_bg']};
+                border: 1px solid {theme['primary']};
+                border-radius: 10px;
+                padding: 15px;
+                text-align: center;
+                font-family: 'Courier New', monospace;
+            ">
+                <p style="color: {theme['primary']};">⚓ NAVY</p>
+                <p style="color: #ffffff; font-size: 1.2em;">
+                    {profile['navy_strength']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c3:
+            st.markdown(f"""
+            <div style="
+                background: {theme['card_bg']};
+                border: 1px solid {theme['primary']};
+                border-radius: 10px;
+                padding: 15px;
+                text-align: center;
+                font-family: 'Courier New', monospace;
+            ">
+                <p style="color: {theme['primary']};">✈️ AIRFORCE</p>
+                <p style="color: #ffffff; font-size: 1.2em;">
+                    {profile['airforce_strength']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Budget + Rank
+        b1, b2 = st.columns(2)
+        with b1:
+            st.metric("💰 Defense Budget",
+                     profile['defense_budget'])
+        with b2:
+            st.metric("🏆 Global Rank",
+                     profile['global_rank'])
+
+        # Weapons
+        if profile['key_weapons']:
+            st.markdown(f"### 🚀 KEY WEAPONS")
+            weapons_text = " | ".join(profile['key_weapons'])
+            st.markdown(f"""
+            <div style="
+                background: {theme['card_bg']};
+                border-left: 4px solid {theme['primary']};
+                padding: 15px;
+                border-radius: 5px;
+                font-family: 'Courier New', monospace;
+                color: {theme['primary']};
+            ">
+                {weapons_text}
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Notable facts
+        if profile['notable_facts']:
+            st.markdown(f"### 📌 NOTABLE FACTS")
+            for fact in profile['notable_facts']:
+                st.markdown(f"- {fact}")
+
+        # Source
+        if profile.get('source_url'):
+            st.markdown(f"""
+            <div style="
+                margin-top: 20px;
+                font-family: 'Courier New', monospace;
+                color: #888888;
+                font-size: 0.8em;
+            ">
+                📊 Data Source: Wikipedia |
+                <a href="{profile['source_url']}"
+                   target="_blank"
+                   style="color: {theme['primary']};">
+                    View Source
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+
+
 # Header
 st.markdown(f"""
 <div class="main-header">
@@ -254,247 +444,259 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Search Section
-col1, col2 = st.columns([4, 1])
+if st.session_state.page == "news":
+    # Search Section
+    col1, col2 = st.columns([4, 1])
 
-with col1:
-    query = st.text_input(
-        "",
-        placeholder="🔍 Enter military/geopolitical query...",
-        label_visibility="collapsed"
-    )
+    with col1:
+        query = st.text_input(
+            "",
+            placeholder="🔍 Enter military/geopolitical query...",
+            label_visibility="collapsed"
+        )
 
-with col2:
-    search_btn = st.button("🔍 SEARCH INTEL")
+    with col2:
+        search_btn = st.button("🔍 SEARCH INTEL")
 
-# Divider
-st.markdown("---")
+    # Divider
+    st.markdown("---")
 
-# Search Logic
-if search_btn and query:
-    with st.spinner("🕵️ SENTINEL AI gathering intelligence..."):
-        try:
-            # Call FastAPI
-            response = requests.post(
-                "http://127.0.0.1:8000/api/v1/news",
-                json={"query": query},
-                timeout=60
-            )
+    # Search Logic
+    if search_btn and query:
+        with st.spinner("🕵️ SENTINEL AI gathering intelligence..."):
+            try:
+                # Call FastAPI
+                response = requests.post(
+                    "http://127.0.0.1:8000/api/v1/news",
+                    json={"query": query},
+                    timeout=60
+                )
 
-            if response.status_code == 200:
-                data = response.json()
+                if response.status_code == 200:
+                    data = response.json()
 
-                # Stats Bar
-                st.markdown(f"""
-                <div class="stats-bar">
-                    📊 INTELLIGENCE REPORT |
-                    Query: "{query}" |
-                    Articles: {data['total_articles']} |
-                    Stories: {data['total_stories']} |
-                    Contradictions: {len(data['contradictions'])}
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Metrics
-                results = data["results"]
-                high = sum(1 for r in results
-                          if r["confidence"] == "HIGH")
-                medium = sum(1 for r in results
-                            if r["confidence"] == "MEDIUM")
-                low = sum(1 for r in results
-                         if r["confidence"] == "LOW")
-
-                m1, m2, m3, m4 = st.columns(4)
-
-                with m1:
-                    st.metric("✅ HIGH", high)
-                with m2:
-                    st.metric("⚠️ MEDIUM", medium)
-                with m3:
-                    st.metric("🔴 LOW", low)
-                with m4:
-                    st.metric(
-                        "⚡ CONTRADICTIONS",
-                        len(data['contradictions'])
-                    )
-
-                # News ticker
-                show_news_ticker(results)
-                st.markdown("---")
-
-                st.markdown("### 📰 INTELLIGENCE FEED")
-
-                # Display stories
-                for i, story in enumerate(results):
-                    conf = story["confidence"]
-                    verdict = story.get("verdict", "UNKNOWN")
-                    sources = ", ".join(story["sources"])
-                    title = story["titles"][0]
-
-                    # Card style
-                    if conf == "HIGH":
-                        card_class = "high-conf"
-                        conf_emoji = "✅"
-                    elif conf == "MEDIUM":
-                        card_class = "medium-conf"
-                        conf_emoji = "⚠️"
-                    else:
-                        card_class = "low-conf"
-                        conf_emoji = "🔴"
-
-                    if "DISPUTED" in verdict:
-                        card_class = "disputed"
-                        conf_emoji = "⚡"
-
+                    # Stats Bar
                     st.markdown(f"""
-                    <div class="story-card {card_class}">
-                        <h3 style="color: #ffffff;
-                                   margin: 0 0 10px 0;">
-                            {conf_emoji} {title}
-                        </h3>
-                        <p style="color: #888888;
-                                  margin: 5px 0;">
-                            🌐 Sources: {sources}
-                        </p>
-                        <p style="color: #888888;
-                                  margin: 5px 0;">
-                            📊 Source Count:
-                            {story['source_count']}
-                        </p>
-                        <p style="margin: 5px 0;">
-                            🏆 Verdict:
-                            <strong>{verdict}</strong>
-                        </p>
+                    <div class="stats-bar">
+                        📊 INTELLIGENCE REPORT |
+                        Query: "{query}" |
+                        Articles: {data['total_articles']} |
+                        Stories: {data['total_stories']} |
+                        Contradictions: {len(data['contradictions'])}
                     </div>
                     """, unsafe_allow_html=True)
 
-                    with st.expander(f"🔍 ANALYZE INTEL - {title[:40]}..."):
+                    # Metrics
+                    results = data["results"]
+                    high = sum(1 for r in results
+                              if r["confidence"] == "HIGH")
+                    medium = sum(1 for r in results
+                                if r["confidence"] == "MEDIUM")
+                    low = sum(1 for r in results
+                             if r["confidence"] == "LOW")
 
-                        # Story details
+                    m1, m2, m3, m4 = st.columns(4)
+
+                    with m1:
+                        st.metric("✅ HIGH", high)
+                    with m2:
+                        st.metric("⚠️ MEDIUM", medium)
+                    with m3:
+                        st.metric("🔴 LOW", low)
+                    with m4:
+                        st.metric(
+                            "⚡ CONTRADICTIONS",
+                            len(data['contradictions'])
+                        )
+
+                    # News ticker
+                    show_news_ticker(results)
+                    st.markdown("---")
+
+                    st.markdown("### 📰 INTELLIGENCE FEED")
+
+                    # Display stories
+                    for i, story in enumerate(results):
+                        conf = story["confidence"]
+                        verdict = story.get("verdict", "UNKNOWN")
+                        sources = ", ".join(story["sources"])
+                        title = story["titles"][0]
+
+                        # Card style
+                        if conf == "HIGH":
+                            card_class = "high-conf"
+                            conf_emoji = "✅"
+                        elif conf == "MEDIUM":
+                            card_class = "medium-conf"
+                            conf_emoji = "⚠️"
+                        else:
+                            card_class = "low-conf"
+                            conf_emoji = "🔴"
+
+                        if "DISPUTED" in verdict:
+                            card_class = "disputed"
+                            conf_emoji = "⚡"
+
                         st.markdown(f"""
-                        <div style="
-                            background: {theme['card_bg']};
-                            border: 2px solid {theme['primary']};
-                            border-radius: 10px;
-                            padding: 20px;
-                            font-family: 'Courier New', monospace;
-                            box-shadow: 0 0 20px {theme['primary']}44;
-                        ">
-                            <h3 style="color: {theme['primary']};">
-                                🕵️ INTELLIGENCE ANALYSIS
+                        <div class="story-card {card_class}">
+                            <h3 style="color: #ffffff;
+                                       margin: 0 0 10px 0;">
+                                {conf_emoji} {title}
                             </h3>
-                            <hr style="border-color: {theme['primary']};">
-                            <p style="color: #ffffff;">
-                                📰 {story['titles'][0]}
+                            <p style="color: #888888;
+                                      margin: 5px 0;">
+                                🌐 Sources: {sources}
                             </p>
-                            <p style="color: {theme['primary']};">
-                                🌐 Sources: {', '.join(story['sources'])}
+                            <p style="color: #888888;
+                                      margin: 5px 0;">
+                                📊 Source Count:
+                                {story['source_count']}
                             </p>
-                            <p style="color: {theme['primary']};">
-                                📊 Confidence: {story['confidence']}
-                            </p>
-                            <p style="color: {theme['primary']};">
-                                🏆 Verdict: {story.get('verdict', 'UNKNOWN')}
+                            <p style="margin: 5px 0;">
+                                🏆 Verdict:
+                                <strong>{verdict}</strong>
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
 
-                        # AI Summary
-                        st.markdown(f"### 🤖 AI INTELLIGENCE BRIEF")
+                        with st.expander(f"🔍 ANALYZE INTEL - {title[:40]}..."):
 
-                        with st.spinner("🕵️ Analyzing intel..."):
-                            from tools.summarizer import summarize_article
-                            article = story["articles"][0]
-                            summary = summarize_article(
-                                article["title"],
-                                article.get("content", ""),
-                                article["source"]
-                            )
-
-                        st.markdown(f"""
-                        <div style="
-                            background: {theme['card_bg']};
-                            border-left: 4px solid {theme['primary']};
-                            padding: 20px;
-                            border-radius: 5px;
-                            font-family: 'Courier New', monospace;
-                            color: #ffffff;
-                            white-space: pre-wrap;
-                        ">
-                            {summary}
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                        # Source articles
-                        st.markdown("### 📰 SOURCE ARTICLES")
-                        for article in story["articles"]:
+                            # Story details
                             st.markdown(f"""
                             <div style="
                                 background: {theme['card_bg']};
-                                border: 1px solid {theme['border']};
-                                border-radius: 8px;
-                                padding: 15px;
-                                margin: 10px 0;
+                                border: 2px solid {theme['primary']};
+                                border-radius: 10px;
+                                padding: 20px;
                                 font-family: 'Courier New', monospace;
+                                box-shadow: 0 0 20px {theme['primary']}44;
                             ">
-                                <p style="color: {theme['primary']};
-                                          font-weight: bold;">
-                                    📰 {article['title']}
+                                <h3 style="color: {theme['primary']};">
+                                    🕵️ INTELLIGENCE ANALYSIS
+                                </h3>
+                                <hr style="border-color: {theme['primary']};">
+                                <p style="color: #ffffff;">
+                                    📰 {story['titles'][0]}
                                 </p>
-                                <p style="color: #888888;">
-                                    🌐 {article['source']}
+                                <p style="color: {theme['primary']};">
+                                    🌐 Sources: {', '.join(story['sources'])}
                                 </p>
-                                <a href="{article['url']}"
-                                   target="_blank"
-                                   style="color: {theme['primary']};">
-                                    🔗 Read Full Article
-                                </a>
+                                <p style="color: {theme['primary']};">
+                                    📊 Confidence: {story['confidence']}
+                                </p>
+                                <p style="color: {theme['primary']};">
+                                    🏆 Verdict: {story.get('verdict', 'UNKNOWN')}
+                                </p>
                             </div>
                             """, unsafe_allow_html=True)
 
-                # Contradictions
-                if data["contradictions"]:
-                    st.markdown("---")
-                    st.markdown("### ⚡ CONTRADICTIONS DETECTED")
-                    for c in data["contradictions"]:
-                        st.warning(
-                            f"⚡ **{c['conflict']}**\n\n"
-                            f"Story 1: {c['story1']}\n\n"
-                            f"Story 2: {c['story2']}"
-                        )
+                            # AI Summary
+                            st.markdown(f"### 🤖 AI INTELLIGENCE BRIEF")
 
-            else:
-                st.error("❌ API Error! Is the server running?")
+                            with st.spinner("🕵️ Analyzing intel..."):
+                                from tools.summarizer import summarize_article
+                                article = story["articles"][0]
+                                summary = summarize_article(
+                                    article["title"],
+                                    article.get("content", ""),
+                                    article["source"]
+                                )
 
-        except Exception as e:
-            st.error(f"❌ Connection Error: {str(e)}")
-            st.info("💡 Make sure FastAPI is running: "
-                   "python -m uvicorn api.main:app --reload")
+                            st.markdown(f"""
+                            <div style="
+                                background: {theme['card_bg']};
+                                border-left: 4px solid {theme['primary']};
+                                padding: 20px;
+                                border-radius: 5px;
+                                font-family: 'Courier New', monospace;
+                                color: #ffffff;
+                                white-space: pre-wrap;
+                            ">
+                                {summary}
+                            </div>
+                            """, unsafe_allow_html=True)
 
-elif search_btn and not query:
-    st.warning("⚠️ Enter a query first Commander!")
+                            # Source articles
+                            st.markdown("### 📰 SOURCE ARTICLES")
+                            for article in story["articles"]:
+                                st.markdown(f"""
+                                <div style="
+                                    background: {theme['card_bg']};
+                                    border: 1px solid {theme['border']};
+                                    border-radius: 8px;
+                                    padding: 15px;
+                                    margin: 10px 0;
+                                    font-family: 'Courier New', monospace;
+                                ">
+                                    <p style="color: {theme['primary']};
+                                              font-weight: bold;">
+                                        📰 {article['title']}
+                                    </p>
+                                    <p style="color: #888888;">
+                                        🌐 {article['source']}
+                                    </p>
+                                    <a href="{article['url']}"
+                                       target="_blank"
+                                       style="color: {theme['primary']};">
+                                        🔗 Read Full Article
+                                    </a>
+                                </div>
+                                """, unsafe_allow_html=True)
 
-else:
-    # Default screen
-    st.markdown("""
-    <div style="text-align: center;
-                padding: 50px;
-                font-family: 'Courier New', monospace;
-                color: #333333;">
-        <p style="font-size: 1.2em;">
-            ● AWAITING ORDERS COMMANDER...
-        </p>
-        <p>Enter a query to begin intelligence gathering</p>
-        <br>
-        <p style="color: #00ff41;">
-            Example queries:
-        </p>
-        <p>"Iran war latest 2026"</p>
-        <p>"Russia Ukraine conflict"</p>
-        <p>"China Taiwan military"</p>
-        <p>"Middle East latest news"</p>
-    </div>
-    """, unsafe_allow_html=True)
+                    # Contradictions
+                    if data["contradictions"]:
+                        st.markdown("---")
+                        st.markdown("### ⚡ CONTRADICTIONS DETECTED")
+                        for c in data["contradictions"]:
+                            st.warning(
+                                f"⚡ **{c['conflict']}**\n\n"
+                                f"Story 1: {c['story1']}\n\n"
+                                f"Story 2: {c['story2']}"
+                            )
+
+                else:
+                    st.error("❌ API Error! Is the server running?")
+
+            except Exception as e:
+                st.error(f"❌ Connection Error: {str(e)}")
+                st.info("💡 Make sure FastAPI is running: "
+                       "python -m uvicorn api.main:app --reload")
+
+    elif search_btn and not query:
+        st.warning("⚠️ Enter a query first Commander!")
+
+    else:
+        # Default screen
+        st.markdown("""
+        <div style="text-align: center;
+                    padding: 50px;
+                    font-family: 'Courier New', monospace;
+                    color: #333333;">
+            <p style="font-size: 1.2em;">
+                ● AWAITING ORDERS COMMANDER...
+            </p>
+            <p>Enter a query to begin intelligence gathering</p>
+            <br>
+            <p style="color: #00ff41;">
+                Example queries:
+            </p>
+            <p>"Iran war latest 2026"</p>
+            <p>"Russia Ukraine conflict"</p>
+            <p>"China Taiwan military"</p>
+            <p>"Middle East latest news"</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+elif st.session_state.page == "countries":
+    show_country_profiles(theme)
+
+elif st.session_state.page == "weapons":
+    st.markdown("### 🚀 WEAPONS DATABASE")
+    st.info("🔧 Coming soon!")
+
+elif st.session_state.page == "leaders":
+    st.markdown("### 👤 LEADER STATEMENTS")
+    st.info("🔧 Coming soon!")
 
 # Footer
 st.markdown("---")
