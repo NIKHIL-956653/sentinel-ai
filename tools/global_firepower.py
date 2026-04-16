@@ -49,20 +49,40 @@ def get_country_firepower(country: str) -> dict:
         if power_index:
             data["power_index"] = power_index.text.strip()
         
-        # Get all stats
-        stat_blocks = soup.find_all("div", {"class": "borderVerticalLeft"})
-        
-        for block in stat_blocks:
-            label = block.find("span", {"class": "textWhite"})
-            value = block.find("span", {"class": "textRed"})
-            
+        # Find all spec containers
+        containers = soup.find_all(
+            "div",
+            {"class": "specsGenContainers"}
+        )
+
+        print(f"Found {len(containers)} containers!")
+
+        for container in containers:
+            # Get label
+            label = container.find(
+                "span",
+                {"class": "textYellow"}
+            )
+            # Get ACTUAL number
+            value = container.find(
+                "span",
+                {"class": "textWhite textShadow"}
+            )
+            # Get rank
+            rank = container.find(
+                "span",
+                {"class": "textSmall1"}
+            )
+
             if label and value:
-                key = label.text.strip().lower().replace(" ", "_")
-                data[key] = value.text.strip()
-        
-        # Debug: see actual HTML structure
-        print(f"Page length: {len(response.text)}")
-        print(f"Sample HTML: {response.text[2000:3000]}")
+                key = label.text.strip().replace(":", "")
+                val = value.text.strip()
+                rnk = rank.text.strip() if rank else ""
+                data[key] = {
+                    "value": val,
+                    "rank": rnk
+                }
+                print(f"  {key}: {val} (Rank: {rnk})")
         print(f"✅ Got {len(data)} data points!")
         return data
         
