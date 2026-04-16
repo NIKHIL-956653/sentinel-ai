@@ -62,7 +62,52 @@ def get_country_military_profile(country: str) -> dict:
             )
         else:
             profile = get_basic_profile(country)
-            
+
+        # Add GFP real numbers!
+        from tools.global_firepower import get_country_firepower
+
+        country_url_map = {
+            "uae": "united-arab-emirates",
+            "united arab emirates": "united-arab-emirates",
+            "usa": "united-states",
+            "united states": "united-states",
+            "uk": "united-kingdom",
+            "united kingdom": "united-kingdom",
+            "north korea": "north-korea",
+            "south korea": "south-korea",
+            "saudi arabia": "saudi-arabia",
+        }
+
+        country_key = country.lower().strip()
+        print(f"🔑 Country key: '{country_key}'")
+        gfp_url = country_url_map.get(
+            country_key,
+            country.lower().strip().replace(" ", "-")
+        )
+        print(f"🔍 GFP URL being used: {gfp_url}")
+        gfp_data = get_country_firepower(gfp_url)
+
+        if gfp_data:
+            profile["army_strength"] = gfp_data.get(
+                "Army Personnel*", {}).get("value", "N/A")
+            profile["navy_strength"] = gfp_data.get(
+                "Navy Personnel*", {}).get("value", "N/A")
+            profile["airforce_strength"] = gfp_data.get(
+                "Air Force Personnel*", {}).get("value", "N/A")
+            profile["defense_budget"] = gfp_data.get(
+                "Defense Budget", {}).get("value", "N/A")
+            profile["active_personnel"] = gfp_data.get(
+                "Active Personnel", {}).get("value", "N/A")
+            profile["fighters"] = gfp_data.get(
+                "Fighters", {}).get("value", "N/A")
+            profile["tanks"] = gfp_data.get(
+                "Tanks", {}).get("value", "N/A")
+            profile["submarines"] = gfp_data.get(
+                "Submarines", {}).get("value", "N/A")
+            profile["aircraft_carriers"] = gfp_data.get(
+                "Aircraft Carriers", {}).get("value", "N/A")
+            profile["data_source"] = "Wikipedia + Global Firepower"
+
         return profile
         
     except Exception as e:

@@ -389,10 +389,42 @@ def show_country_profiles(theme):
             st.metric("🏆 Global Rank",
                      profile['global_rank'])
 
+        st.markdown("### ⚔️ COMBAT STRENGTH")
+
+        c4, c5, c6 = st.columns(3)
+
+        with c4:
+            fighters = profile.get('fighters', 'N/A')
+            if 'Stock:' in str(fighters):
+                fighters = fighters.split('Stock:')[1].split('(')[0].strip()
+            st.metric("✈️ Fighter Jets", fighters)
+        with c5:
+            tanks = profile.get('tanks', 'N/A')
+            if 'Stock:' in str(tanks):
+                tanks = tanks.split('Stock:')[1].split('\n')[0].strip()
+            st.metric("🚂 Tanks", tanks)
+        with c6:
+            st.metric("🤿 Submarines",
+                     profile.get('submarines', 'N/A'))
+
+        # Aircraft carriers
+        carriers = profile.get('aircraft_carriers', '0')
+        if carriers and carriers != '0':
+            st.metric("🛳️ Aircraft Carriers", carriers)
+
         # Weapons
+        weapons = [w for w in profile.get('key_weapons', [])
+                   if w and w != "Officially Not Available"
+                   and w != "N/A"
+                   and len(w) > 3]
+        if weapons:
+            profile['key_weapons'] = weapons
         if profile['key_weapons']:
             st.markdown(f"### 🚀 KEY WEAPONS")
-            weapons_text = " | ".join(profile['key_weapons'])
+            if isinstance(profile['key_weapons'], list):
+                weapons_text = " | ".join(profile['key_weapons'])
+            else:
+                weapons_text = str(profile['key_weapons'])
             st.markdown(f"""
             <div style="
                 background: {theme['card_bg']};
@@ -405,6 +437,79 @@ def show_country_profiles(theme):
                 {weapons_text}
             </div>
             """, unsafe_allow_html=True)
+
+            # Weapon detail expanders
+            st.markdown("#### 🔍 WEAPON DETAILS")
+            from tools.weapons_tool import get_weapon_details
+            for weapon in profile['key_weapons']:
+                with st.expander(f"🚀 {weapon}", expanded=False):
+                    cache_key = f"weapon_{weapon}_{selected}"
+                    if cache_key not in st.session_state:
+                        with st.spinner(f"Loading {weapon}..."):
+                            st.session_state[cache_key] = get_weapon_details(weapon, selected)
+                    weapon_data = st.session_state[cache_key]
+
+                    if weapon_data:
+                        # Image
+                        if weapon_data.get('image'):
+                            st.image(weapon_data['image'], width=300)
+
+                        # Description
+                        if weapon_data.get('description'):
+                            st.markdown(f"""
+                            <div style="
+                                background: {theme['card_bg']};
+                                border-left: 4px solid {theme['primary']};
+                                padding: 12px;
+                                border-radius: 5px;
+                                color: {theme['text']};
+                                font-family: 'Courier New', monospace;
+                                margin-bottom: 10px;
+                            ">
+                                {weapon_data['description']}
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        # Specifications — non-N/A only
+                        specs = weapon_data.get('specifications', {})
+                        available_specs = {
+                            k: v for k, v in specs.items()
+                            if v and v != "N/A"
+                            and v != "Officially Not Available"
+                        }
+                        if available_specs:
+                            st.markdown("### ⚙️ SPECIFICATIONS")
+                            primary = theme['primary']
+                            for key, value in available_specs.items():
+                                st.markdown(
+                                    f"<span style='color:{primary};font-family:Courier New,monospace;'>"
+                                    f"<b>{key.title()}:</b></span> {value}",
+                                    unsafe_allow_html=True
+                                )
+
+                        # Fun fact
+                        if weapon_data.get('fun_fact'):
+                            st.markdown(f"""
+                            <div style="
+                                background: {theme['secondary']};
+                                border: 1px solid {theme['primary']};
+                                padding: 10px;
+                                border-radius: 5px;
+                                color: {theme['primary']};
+                                font-family: 'Courier New', monospace;
+                                margin-top: 10px;
+                            ">
+                                💡 {weapon_data['fun_fact']}
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        # Source link
+                        if weapon_data.get('source_url'):
+                            st.markdown(
+                                f"[📖 Wikipedia Source]({weapon_data['source_url']})"
+                            )
+                    else:
+                        st.warning(f"No data found for {weapon}")
 
         # Notable facts
         if profile['notable_facts']:
