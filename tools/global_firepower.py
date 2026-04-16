@@ -118,21 +118,30 @@ def get_military_rank(country: str) -> str:
 
 
 def test_firepower():
-    """Test Global Firepower scraper"""
-    
-    print("🧪 Testing Global Firepower...")
-    print("="*50)
-    
-    # Test with UAE
-    data = get_country_firepower("united-arab-emirates")
-    
-    print(f"\n📊 UAE Military Data:")
-    for key, value in data.items():
-        print(f"  {key}: {value}")
-    
-    print("\n🏆 Getting rank...")
-    rank = get_military_rank("United Arab Emirates")
-    print(f"UAE Global Rank: {rank}")
+    countries = [
+        "india",
+        "russia",
+        "belarus"
+    ]
+
+    for country in countries:
+        print(f"\n{'='*50}")
+        data = get_country_firepower(country)
+        print(f"\n🌍 {country.upper()} - {len(data)} data points!")
+
+        # Show key military stats only!
+        key_stats = [
+            "Active Personnel",
+            "Defense Budget",
+            "Fighters",
+            "Tanks",
+            "Submarines",
+            "Aircraft Carriers"
+        ]
+
+        for stat in key_stats:
+            if stat in data:
+                print(f"  {stat}: {data[stat]['value']} (Rank: {data[stat]['rank']})")
 
 
 if __name__ == "__main__":
