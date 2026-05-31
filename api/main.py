@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.news import router
+from api.routes.country import router as country_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -20,6 +21,7 @@ app.add_middleware(
 
 # Include routes
 app.include_router(router, prefix="/api/v1")
+app.include_router(country_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():

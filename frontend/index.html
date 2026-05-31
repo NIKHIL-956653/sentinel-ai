@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL 2.0 — OSINT Intelligence Platform</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="bootScreen" class="boot-screen">
+  <canvas id="bootRain"></canvas>
+  <div class="boot-content">
+    <div class="boot-logo">SENTINEL <span class="cyan">2.0</span></div>
+    <div class="boot-sub">OPEN SOURCE INTELLIGENCE PLATFORM</div>
+    <div id="bootLog" class="boot-log"></div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until boot done) -->
+<div id="mainApp" class="main-app" style="display:none;">
+
+  <!-- MATRIX RAIN BACKGROUND -->
+  <canvas id="bgRain" class="bg-rain"></canvas>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">SENTINEL <span class="cyan">2.0</span></div>
+      <div class="tagline">OPEN SOURCE INTELLIGENCE // NEWS VERIFICATION</div>
+    </div>
+    <div class="header-right">
+      <div id="clock" class="clock">--:--:--</div>
+      <div class="status"><span class="dot"></span> SYSTEM ONLINE</div>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="nav">
+    <button class="nav-btn active" data-screen="home">🌍 THREAT GRID</button>
+    <button class="nav-btn" data-screen="news">📰 NEWS FEED</button>
+    <button class="nav-btn" data-screen="countries">🗂️ COUNTRIES</button>
+    <button class="nav-btn" data-screen="leaders">👤 LEADERS</button>
+    <button class="nav-btn" data-screen="compare">⚔️ COMPARE</button>
+  </nav>
+
+  <!-- SCREEN: HOME / THREAT GRID -->
+  <section id="screen-home" class="screen active">
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title">// GLOBAL ACTIVITY MAP</div>
+        <div class="map-placeholder">
+          <div class="map-text">🌍 Live conflict zones loading...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">// SYSTEM STATS</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-label">SOURCES</div><div class="stat-val cyan" id="srcCount">2847</div></div>
+          <div class="stat-box"><div class="stat-label">VERIFIED</div><div class="stat-val green">89%</div></div>
+          <div class="stat-box"><div class="stat-label">ALERTS</div><div class="stat-val red">12</div></div>
+          <div class="stat-box"><div class="stat-label">STATUS</div><div class="stat-val amber">LIVE</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: NEWS FEED -->
+  <section id="screen-news" class="screen">
+    <div class="search-bar">
+      <span class="prompt">></span>
+      <input type="text" id="newsQuery" placeholder="Enter military/geopolitical query...">
+      <button id="searchBtn" class="btn-primary">🔍 SEARCH INTEL</button>
+    </div>
+    <div id="newsResults" class="results"></div>
+  </section>
+
+  <!-- SCREEN: COUNTRIES -->
+  <section id="screen-countries" class="screen">
+    <div class="search-bar">
+      <select id="countrySelect">
+<option value="">SELECT COUNTRY...</option>
+<option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahrain</option><option>Bangladesh</option><option>Belarus</option><option>Belgium</option><option>Bolivia</option><option>Bosnia and Herzegovina</option><option>Brazil</option><option>Bulgaria</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Croatia</option><option>Cuba</option><option>Czech Republic</option><option>Denmark</option><option>Ecuador</option><option>Egypt</option><option>Ethiopia</option><option>Finland</option><option>France</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Hungary</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Kuwait</option><option>Kyrgyzstan</option><option>Lebanon</option><option>Libya</option><option>Lithuania</option><option>Malaysia</option><option>Mexico</option><option>Morocco</option><option>Myanmar</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option><option>North Korea</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Serbia</option><option>Singapore</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Tajikistan</option><option>Thailand</option><option>Tunisia</option><option>Turkey</option><option>Turkmenistan</option><option>UAE</option><option>Uganda</option><option>Ukraine</option><option>United Kingdom</option><option>United States</option><option>Uzbekistan</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option><option>Zimbabwe</option>
+      </select>
+    </div>
+    <div id="countryResults" class="results"></div>
+  </section>
+
+  <!-- SCREEN: LEADERS -->
+  <section id="screen-leaders" class="screen">
+    <div class="panel-title">// WORLD LEADER STATEMENTS</div>
+    <button id="loadLeaders" class="btn-primary">🔄 LOAD STATEMENTS</button>
+    <div id="leaderResults" class="results"></div>
+  </section>
+
+  <!-- SCREEN: COMPARE -->
+  <section id="screen-compare" class="screen">
+    <div class="compare-selects">
+      <select id="compare1">
+<option value="">COUNTRY 1...</option>
+<option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahrain</option><option>Bangladesh</option><option>Belarus</option><option>Belgium</option><option>Brazil</option><option>Bulgaria</option><option>Cambodia</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Croatia</option><option>Cuba</option><option>Czech Republic</option><option>Denmark</option><option>Egypt</option><option>Ethiopia</option><option>Finland</option><option>France</option><option>Germany</option><option>Greece</option><option>Hungary</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kuwait</option><option>Lebanon</option><option>Libya</option><option>Malaysia</option><option>Mexico</option><option>Morocco</option><option>Myanmar</option><option>Netherlands</option><option>Nigeria</option><option>North Korea</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Serbia</option><option>Singapore</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Thailand</option><option>Tunisia</option><option>Turkey</option><option>UAE</option><option>Ukraine</option><option>United Kingdom</option><option>United States</option><option>Uzbekistan</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option>
+</select>
+      <span class="vs">VS</span>
+      <select id="compare2">
+<option value="">COUNTRY 2...</option>
+<option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahrain</option><option>Bangladesh</option><option>Belarus</option><option>Belgium</option><option>Brazil</option><option>Bulgaria</option><option>Cambodia</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Croatia</option><option>Cuba</option><option>Czech Republic</option><option>Denmark</option><option>Egypt</option><option>Ethiopia</option><option>Finland</option><option>France</option><option>Germany</option><option>Greece</option><option>Hungary</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kuwait</option><option>Lebanon</option><option>Libya</option><option>Malaysia</option><option>Mexico</option><option>Morocco</option><option>Myanmar</option><option>Netherlands</option><option>Nigeria</option><option>North Korea</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Serbia</option><option>Singapore</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Thailand</option><option>Tunisia</option><option>Turkey</option><option>UAE</option><option>Ukraine</option><option>United Kingdom</option><option>United States</option><option>Uzbekistan</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option>
+</select>
+      <button id="compareBtn" class="btn-primary">⚔️ COMPARE</button>
+    </div>
+    <div id="compareResults" class="results"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    SENTINEL 2.0 analyzes publicly available news sources using AI verification.
+    Not affiliated with any government or intelligence agency. OSINT for educational purposes.
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
