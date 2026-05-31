@@ -48,28 +48,29 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-dd_col, _ = st.columns([1, 3])
-with dd_col:
-    selected_page = st.selectbox(
-        "📊 INTELLIGENCE",
-        ["📰 News Feed", "🌍 Countries", "👤 Leaders"]
-    )
-    selected_theme = st.selectbox(
-        "🎨 THEME",
-        list(THEMES.keys())
-    )
+# Navigation tabs
+tab_col1, tab_col2, tab_col3, tab_col4 = st.columns([1,1,1,3])
+
+with tab_col1:
+    if st.button("📰 NEWS FEED", use_container_width=True):
+        st.session_state.page = "news"
+
+with tab_col2:
+    if st.button("🌍 COUNTRIES", use_container_width=True):
+        st.session_state.page = "countries"
+
+with tab_col3:
+    if st.button("👤 LEADERS", use_container_width=True):
+        st.session_state.page = "leaders"
+
+# Fix selected_page and selected_theme
+selected_page = st.session_state.get("page", "news")
+selected_theme = "🟢 CIA Classic"
 
 # Default page
 if "page" not in st.session_state:
     st.session_state.page = "news"
 
-# Update page from dropdown
-if "News" in selected_page:
-    st.session_state.page = "news"
-elif "Countries" in selected_page:
-    st.session_state.page = "countries"
-elif "Leaders" in selected_page:
-    st.session_state.page = "leaders"
 
 st.markdown("---")
 
@@ -499,46 +500,26 @@ def show_country_profiles(theme):
 
         with r1c2:
             st.markdown(f"""
-            <div class="mil-box" style="text-align:center;">
+            <div class="mil-box" style="text-align:center; padding:12px;">
                 <div class="mil-box-title">🪖 ARMY</div>
-                <div class="scrollable-box"
-                     style="display:flex; align-items:center;
-                            justify-content:center;">
-                    <div>
-                        <div style="color:#00ff41;
-                                    font-size:1.8em;
-                                    font-weight:bold;">
-                            {profile['army_strength']}
-                        </div>
-                        <div style="color:#888888;
-                                    font-size:0.8em;
-                                    margin-top:8px;">
-                            ACTIVE PERSONNEL
-                        </div>
-                    </div>
+                <div style="color:#00ff41; font-size:1.4em; font-weight:bold;">
+                    {profile['army_strength']}
+                </div>
+                <div style="color:#888888; font-size:0.75em;">
+                    ACTIVE PERSONNEL
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
         with r1c3:
             st.markdown(f"""
-            <div class="mil-box" style="text-align:center;">
+            <div class="mil-box" style="text-align:center; padding:12px;">
                 <div class="mil-box-title">⚓ NAVY</div>
-                <div class="scrollable-box"
-                     style="display:flex; align-items:center;
-                            justify-content:center;">
-                    <div>
-                        <div style="color:#00bfff;
-                                    font-size:1.8em;
-                                    font-weight:bold;">
-                            {profile['navy_strength']}
-                        </div>
-                        <div style="color:#888888;
-                                    font-size:0.8em;
-                                    margin-top:8px;">
-                            NAVAL PERSONNEL
-                        </div>
-                    </div>
+                <div style="color:#00bfff; font-size:1.4em; font-weight:bold;">
+                    {profile['navy_strength']}
+                </div>
+                <div style="color:#888888; font-size:0.75em;">
+                    NAVAL PERSONNEL
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -577,63 +558,58 @@ def show_country_profiles(theme):
 
         with r2c1:
             st.markdown(f"""
-            <div class="mil-box" style="text-align:center;">
+            <div class="mil-box" style="text-align:center; padding:12px;">
                 <div class="mil-box-title">✈️ AIRFORCE</div>
-                <div class="scrollable-box"
-                     style="display:flex; align-items:center;
-                            justify-content:center;">
-                    <div>
-                        <div style="color:#ff6600;
-                                    font-size:1.8em;
-                                    font-weight:bold;">
-                            {profile['airforce_strength']}
-                        </div>
-                        <div style="color:#888888;
-                                    font-size:0.8em;
-                                    margin-top:8px;">
-                            AIR PERSONNEL
-                        </div>
-                    </div>
+                <div style="color:#ff6600; font-size:1.4em; font-weight:bold;">
+                    {profile['airforce_strength']}
+                </div>
+                <div style="color:#888888; font-size:0.75em;">
+                    AIR PERSONNEL
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
         with r2c2:
             st.markdown(f"""
-            <div class="mil-box" style="text-align:center;">
+            <div class="mil-box" style="text-align:center; padding:12px;">
                 <div class="mil-box-title">💰 DEFENSE BUDGET</div>
-                <div class="scrollable-box"
-                     style="display:flex; align-items:center;
-                            justify-content:center;">
-                    <div>
-                        <div style="color:#ffd700;
-                                    font-size:1.1em;
-                                    font-weight:bold;">
-                            {profile['defense_budget']}
-                        </div>
-                    </div>
+                <div style="color:#ffd700; font-size:1.1em; font-weight:bold;">
+                    {profile['defense_budget']}
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
+        # Hardcoded ranks for accuracy
+        known_ranks = {
+            "United States": 1,
+            "Russia": 2,
+            "China": 3,
+            "India": 4,
+            "United Kingdom": 5,
+            "South Korea": 6,
+            "Pakistan": 7,
+            "Japan": 8,
+            "France": 9,
+            "Italy": 10,
+            "Turkey": 11,
+            "Israel": 17,
+            "Iran": 14,
+            "UAE": 38,
+            "Saudi Arabia": 22,
+            "Germany": 19,
+            "North Korea": 36,
+        }
+        actual_rank = known_ranks.get(selected, profile['global_rank'])
+
         with r2c3:
             st.markdown(f"""
-            <div class="mil-box" style="text-align:center;">
+            <div class="mil-box" style="text-align:center; padding:12px;">
                 <div class="mil-box-title">🏆 GLOBAL RANK</div>
-                <div class="scrollable-box"
-                     style="display:flex; align-items:center;
-                            justify-content:center;">
-                    <div>
-                        <div style="color:#ff0000;
-                                    font-size:2.5em;
-                                    font-weight:bold;">
-                            #{profile['global_rank']}
-                        </div>
-                        <div style="color:#888888;
-                                    font-size:0.8em;">
-                            WORLD MILITARY POWER
-                        </div>
-                    </div>
+                <div style="color:#ff0000; font-size:2em; font-weight:bold;">
+                    #{actual_rank}
+                </div>
+                <div style="color:#888888; font-size:0.75em;">
+                    WORLD MILITARY POWER
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -667,7 +643,9 @@ def show_country_profiles(theme):
         </div>
         """, height=65)
 
-        # ── ROW 3: Combat Stats ────────────────────────────────
+        # ── ROW 3: Combat Stats with Expandable Details ───────
+        st.markdown("### ⚔️ COMBAT ARSENAL — Click for Details")
+
         r3c1, r3c2, r3c3, r3c4 = st.columns(4)
 
         fighters = profile.get('fighters', 'N/A')
@@ -681,54 +659,145 @@ def show_country_profiles(theme):
         subs = profile.get('submarines', 'N/A')
         carriers = profile.get('aircraft_carriers', '0')
 
-        for col, icon, label, val, color in [
-            (r3c1, "✈️", "FIGHTER JETS", fighters, "#00bfff"),
-            (r3c2, "🚂", "TANKS", tanks, "#ff6600"),
-            (r3c3, "🤿", "SUBMARINES", subs, "#00ff41"),
-            (r3c4, "🛳️", "CARRIERS", carriers, "#ffd700"),
+        for col, icon, label, val, color, category in [
+            (r3c1, "✈️", "FIGHTER JETS", fighters, "#00bfff", "fighter_jets"),
+            (r3c2, "🚂", "TANKS", tanks, "#ff6600", "tanks"),
+            (r3c3, "🤿", "SUBMARINES", subs, "#00ff41", "submarines"),
+            (r3c4, "🛳️", "CARRIERS", carriers, "#ffd700", "warships"),
         ]:
             with col:
                 st.markdown(f"""
-                <div class="mil-box" style="text-align:center;">
+                <div class="mil-box" style="text-align:center;
+                                            cursor:pointer;">
                     <div class="mil-box-title">{icon} {label}</div>
                     <div style="color:{color};
                                 font-size:1.6em;
                                 font-weight:bold;
-                                padding:10px 0;
+                                padding:8px 0;
                                 text-shadow: 0 0 10px {color};">
                         {val}
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-        # ── MATRIX RAIN GAP 3 ─────────────────────────────────
+        # Expandable details for each category
+        exp1, exp2, exp3, exp4 = st.columns(4)
+
+        categories = [
+            (exp1, "✈️ FIGHTER JET DETAILS", "fighter_jets"),
+            (exp2, "🚂 TANK DETAILS", "tanks"),
+            (exp3, "🤿 SUBMARINE DETAILS", "submarines"),
+            (exp4, "🛳️ WARSHIP DETAILS", "warships"),
+        ]
+
+        for col, label, category in categories:
+            with col:
+                with st.expander(f"🔍 {label}"):
+                    with st.spinner(f"Loading classified data..."):
+                        from tools.weapons_detail_tool import get_weapon_category_details
+                        details = get_weapon_category_details(
+                            selected, category
+                        )
+
+                    for item in details:
+                        name = item.get('name', 'Unknown')
+                        year = item.get('year', 'N/A')
+                        history = item.get('history', '')
+                        role = item.get('role', item.get('type', ''))
+                        patrol = item.get('patrol_areas', '')
+
+                        st.markdown(f"""
+                        <div style="
+                            border-left: 3px solid #00ff41;
+                            padding: 8px 12px;
+                            margin: 8px 0;
+                            background: #0a1a0a;
+                            border-radius: 0 5px 5px 0;
+                        ">
+                            <div style="color:#00ff41;
+                                        font-weight:bold;
+                                        font-size:0.95em;">
+                                {name}
+                            </div>
+                            <div style="color:#888888;
+                                        font-size:0.8em;">
+                                📅 {year}
+                                {f' | 🎯 {role}' if role else ''}
+                                {f' | 🌊 {patrol}' if patrol else ''}
+                            </div>
+                            <div style="color:#cccccc;
+                                        font-size:0.82em;
+                                        margin-top:4px;">
+                                {history}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+        # Missiles section
         components.html("""
-        <div style="background:#000000; height:60px;
-                    overflow:hidden;">
-        <canvas id="rain3"></canvas>
+        <div style="background:#000000; height:40px; overflow:hidden;">
+        <canvas id="rain_missiles"></canvas>
         <script>
-        var c=document.getElementById('rain3');
+        var c=document.getElementById('rain_missiles');
         var ctx=c.getContext('2d');
-        c.width=window.innerWidth; c.height=60;
+        c.width=window.innerWidth; c.height=40;
         var cols=Math.floor(c.width/16);
         var drops=Array(cols).fill(0);
-        var chars='01アイウエオカキク軍事機密戦争';
+        var chars='01ミサイル核弾頭軍事機密';
         function draw(){
             ctx.fillStyle='rgba(0,0,0,0.1)';
             ctx.fillRect(0,0,c.width,c.height);
-            ctx.fillStyle='#004400';
-            ctx.font='14px monospace';
+            ctx.fillStyle='#ff000044';
+            ctx.font='12px monospace';
             drops.forEach(function(y,i){
                 var ch=chars[Math.floor(Math.random()*chars.length)];
-                ctx.fillText(ch,i*16,y*16);
-                if(y*16>c.height&&Math.random()>0.9) drops[i]=0;
+                ctx.fillText(ch,i*16,y*12);
+                if(y*12>c.height&&Math.random()>0.9) drops[i]=0;
                 else drops[i]++;
             });
         }
         setInterval(draw,50);
         </script>
         </div>
-        """, height=65)
+        """, height=45)
+
+        # Missiles expander
+        with st.expander("🚀 MISSILE ARSENAL — Click to view classified data"):
+            with st.spinner("🔍 Decrypting missile database..."):
+                from tools.weapons_detail_tool import get_weapon_category_details
+                missiles = get_weapon_category_details(selected, "missiles")
+
+            for missile in missiles:
+                name = missile.get('name', 'Unknown')
+                mtype = missile.get('type', '')
+                mrange = missile.get('range', '')
+                year = missile.get('year', '')
+                history = missile.get('history', '')
+
+                st.markdown(f"""
+                <div style="
+                    border-left: 4px solid #ff0000;
+                    padding: 10px 14px;
+                    margin: 10px 0;
+                    background: #1a0000;
+                    border-radius: 0 8px 8px 0;
+                    font-family: 'Courier New', monospace;
+                ">
+                    <div style="color:#ff4444;
+                                font-weight:bold;
+                                font-size:1em;">
+                        🚀 {name}
+                    </div>
+                    <div style="color:#888888; font-size:0.8em; margin:4px 0;">
+                        {f'Type: {mtype}' if mtype else ''}
+                        {f' | Range: {mrange}' if mrange else ''}
+                        {f' | Deployed: {year}' if year else ''}
+                    </div>
+                    <div style="color:#cccccc; font-size:0.85em; margin-top:6px;">
+                        {history}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
         # ── ROW 4: Key Weapons ─────────────────────────────────
         weapons = [w for w in profile.get('key_weapons', [])
@@ -820,6 +889,55 @@ def show_country_profiles(theme):
             </div>
             """, unsafe_allow_html=True)
 
+        # Special Forces Section — Dynamic LLM lookup
+        from tools.special_forces_tool import get_special_forces
+        with st.spinner(f"🕵️ Loading classified intel for {selected}..."):
+            forces = get_special_forces(selected)
+        if forces:
+            components.html("""
+            <div style="background:#000000; height:40px; overflow:hidden;">
+            <canvas id="rain_sf"></canvas>
+            <script>
+            var c=document.getElementById('rain_sf');
+            var ctx=c.getContext('2d');
+            c.width=window.innerWidth; c.height=40;
+            var cols=Math.floor(c.width/16);
+            var drops=Array(cols).fill(0);
+            var chars='01アイウエオ軍事機密';
+            function draw(){
+                ctx.fillStyle='rgba(0,0,0,0.1)';
+                ctx.fillRect(0,0,c.width,c.height);
+                ctx.fillStyle='#004400';
+                ctx.font='12px monospace';
+                drops.forEach(function(y,i){
+                    var ch=chars[Math.floor(Math.random()*chars.length)];
+                    ctx.fillText(ch,i*16,y*12);
+                    if(y*12>c.height&&Math.random()>0.9) drops[i]=0;
+                    else drops[i]++;
+                });
+            }
+            setInterval(draw,50);
+            </script>
+            </div>
+            """, height=45)
+
+            forces_html = ""
+            for force in forces:
+                forces_html += f"<div style='padding:6px 10px;border-left:3px solid #00ff41;margin:5px 0;color:#ffffff;font-size:0.9em;background:#0a1a0a;border-radius:0 5px 5px 0;'>{force}</div>"
+
+            st.markdown(f"""
+            <div class="mil-box">
+                <div class="mil-box-title">
+                    🕵️ SPECIAL FORCES & INTELLIGENCE UNITS
+                </div>
+                <div style="max-height:250px; overflow-y:auto;
+                            scrollbar-width:thin;
+                            scrollbar-color:#00ff41 #111111;">
+                    {forces_html}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
         # Source
         if profile.get('source_url'):
             st.markdown(f"""
@@ -888,19 +1006,30 @@ if st.session_state.page == "news":
                     low = sum(1 for r in results
                              if r["confidence"] == "LOW")
 
-                    m1, m2, m3, m4 = st.columns(4)
-
-                    with m1:
-                        st.metric("✅ HIGH", high)
-                    with m2:
-                        st.metric("⚠️ MEDIUM", medium)
-                    with m3:
-                        st.metric("🔴 LOW", low)
-                    with m4:
-                        st.metric(
-                            "⚡ CONTRADICTIONS",
-                            len(data['contradictions'])
-                        )
+                    # Small stats on right side
+                    st.markdown(f"""
+<div style="
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    padding: 8px 0;
+">
+    <span style="color:#00ff41;">
+        ✅ HIGH: {high}
+    </span>
+    <span style="color:#ffff00;">
+        ⚠️ MEDIUM: {medium}
+    </span>
+    <span style="color:#ff4444;">
+        🔴 LOW: {low}
+    </span>
+    <span style="color:#ff6600;">
+        ⚡ CONTRADICTIONS: {len(data['contradictions'])}
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
                     # News ticker
                     show_news_ticker(results)
