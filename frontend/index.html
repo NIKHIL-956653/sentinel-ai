@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENTINEL 2.0 — OSINT Intelligence Platform</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -47,24 +49,88 @@
 
   <!-- SCREEN: HOME / THREAT GRID -->
   <section id="screen-home" class="screen active">
-    <div class="grid-2">
+  <div class="war-room">
+
+    <!-- LEFT PANEL — Intel Feed -->
+    <div class="war-left">
       <div class="panel">
-        <div class="panel-title">// GLOBAL ACTIVITY MAP</div>
-        <div class="map-placeholder">
-          <div class="map-text">🌍 Live conflict zones loading...</div>
-        </div>
+        <div class="panel-title">// INTELLIGENCE FEED</div>
+        <div id="intelFeed" class="intel-feed"></div>
       </div>
-      <div class="panel">
-        <div class="panel-title">// SYSTEM STATS</div>
+      <div class="panel" style="margin-top:12px;">
+        <div class="panel-title">// SYSTEM STATUS</div>
         <div class="stat-grid">
           <div class="stat-box"><div class="stat-label">SOURCES</div><div class="stat-val cyan" id="srcCount">2847</div></div>
           <div class="stat-box"><div class="stat-label">VERIFIED</div><div class="stat-val green">89%</div></div>
-          <div class="stat-box"><div class="stat-label">ALERTS</div><div class="stat-val red">12</div></div>
+          <div class="stat-box"><div class="stat-label">ALERTS</div><div class="stat-val red" id="alertCount">0</div></div>
           <div class="stat-box"><div class="stat-label">STATUS</div><div class="stat-val amber">LIVE</div></div>
         </div>
       </div>
     </div>
-  </section>
+
+    <!-- CENTER — World Map -->
+    <div class="war-center">
+      <div class="panel" style="height:100%;">
+        <div class="panel-title">// GLOBAL THREAT MAP — LIVE OSINT</div>
+        <div id="worldMap" style="height:380px; width:100%; border-radius:8px; border:1px solid #0d4a33; position:relative; z-index:1;"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL — Radar -->
+    <div class="war-right">
+      <div class="panel">
+        <div class="panel-title">// TACTICAL RADAR</div>
+        <div style="position:relative; width:180px; height:180px; margin:0 auto;">
+          <svg viewBox="0 0 180 180" style="position:absolute; top:0; left:0; width:180px; height:180px;">
+            <circle cx="90" cy="90" r="85" fill="none" stroke="#0d4a33" stroke-width="1"/>
+            <circle cx="90" cy="90" r="60" fill="none" stroke="#0d4a33" stroke-width="1"/>
+            <circle cx="90" cy="90" r="35" fill="none" stroke="#0d4a33" stroke-width="1"/>
+            <line x1="90" y1="5" x2="90" y2="175" stroke="#0d4a33" stroke-width="0.5"/>
+            <line x1="5" y1="90" x2="175" y2="90" stroke="#0d4a33" stroke-width="0.5"/>
+            <line x1="30" y1="30" x2="150" y2="150" stroke="#0d4a33" stroke-width="0.5"/>
+            <line x1="150" y1="30" x2="30" y2="150" stroke="#0d4a33" stroke-width="0.5"/>
+            <circle cx="130" cy="60" r="4" fill="#ff4d6d"><animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite"/></circle>
+            <circle cx="60" cy="120" r="4" fill="#ffb300"><animate attributeName="opacity" values="1;0;1" dur="2.4s" repeatCount="indefinite"/></circle>
+            <circle cx="110" cy="110" r="4" fill="#00ff9c"><animate attributeName="opacity" values="1;0;1" dur="3s" repeatCount="indefinite"/></circle>
+            <circle cx="45" cy="55" r="3" fill="#ff4d6d"><animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/></circle>
+          </svg>
+          <div id="radarSweep" style="position:absolute; top:0; left:0; width:180px; height:180px; border-radius:50%; background:conic-gradient(from 0deg, transparent 0deg, transparent 300deg, #00ff9c22 350deg, #00ff9c55 360deg);"></div>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:10px; color:#3a7a5c; letter-spacing:2px;">SWEEP: ACTIVE</div>
+      </div>
+
+      <div class="panel" style="margin-top:12px;">
+        <div class="panel-title">// THREAT LEVEL</div>
+        <div style="text-align:center; padding:10px;">
+          <div style="color:#ff4d6d; font-size:28px; font-weight:bold; text-shadow:0 0 20px #ff4d6d;">ELEVATED</div>
+          <div style="color:#3a7a5c; font-size:10px; letter-spacing:2px; margin-top:4px;">BASED ON OSINT ANALYSIS</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
+          <span style="width:50px; color:#ff4d6d; font-size:11px;">HIGH</span>
+          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
+            <div id="highBar" style="width:0%; height:100%; background:#ff4d6d; border-radius:3px; transition:width 1s;"></div>
+          </div>
+          <span id="highNum" style="color:#ff4d6d; font-size:11px;">0</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
+          <span style="width:50px; color:#ffb300; font-size:11px;">MED</span>
+          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
+            <div id="medBar" style="width:0%; height:100%; background:#ffb300; border-radius:3px; transition:width 1s;"></div>
+          </div>
+          <span id="medNum" style="color:#ffb300; font-size:11px;">0</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
+          <span style="width:50px; color:#00ff9c; font-size:11px;">LOW</span>
+          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
+            <div id="lowBar" style="width:0%; height:100%; background:#00ff9c; border-radius:3px; transition:width 1s;"></div>
+          </div>
+          <span id="lowNum" style="color:#00ff9c; font-size:11px;">0</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
   <!-- SCREEN: NEWS FEED -->
   <section id="screen-news" class="screen">

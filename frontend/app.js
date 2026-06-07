@@ -68,15 +68,6 @@ setInterval(() => {
   if (clock) clock.textContent = new Date().toUTCString().slice(17, 25);
 }, 1000);
 
-// ───── SOURCE COUNTER ─────
-setInterval(() => {
-  const el = document.getElementById("srcCount");
-  if (el) {
-    let n = parseInt(el.textContent);
-    n += Math.floor(Math.random() * 7 - 3);
-    el.textContent = n;
-  }
-}, 1500);
 
 // ───── NAV SWITCHING ─────
 document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -123,6 +114,12 @@ function renderNews(data) {
   if (stories.length === 0) {
     results.innerHTML = '<div class="news-card">No intelligence found for this query.</div>';
     return;
+  }
+
+  // Update sources counter with real number
+  const srcEl = document.getElementById("srcCount");
+  if (srcEl && data.total_articles) {
+    srcEl.textContent = data.total_articles;
   }
 
   let high = 0, medium = 0, low = 0;
@@ -548,3 +545,182 @@ async function renderCompare(a, b) {
     </div>
     ${winnerHtml}`;
 }
+
+// ───── WORLD MAP ─────
+let map = null;
+let newsMarkers = [];
+
+// Conflict zones with coordinates
+const conflictZones = [
+  // 🔴 ACTIVE WAR ZONES
+  { lat: 49.0, lng: 31.0, name: "Ukraine — Russia War", level: "high", radius: 500000, info: "Active war since Feb 2022. Russian forces vs Ukrainian Armed Forces." },
+  { lat: 31.5, lng: 34.8, name: "Gaza — Israel War", level: "high", radius: 80000, info: "Active military operations. IDF vs Hamas since Oct 2023." },
+  { lat: 32.5, lng: 53.0, name: "Iran — US/Israel Conflict", level: "high", radius: 600000, info: "US + Israeli strikes on Iran began Feb 2026. Active conflict." },
+  { lat: 33.5, lng: 35.8, name: "Lebanon — Israel Border", level: "high", radius: 150000, info: "Cross-border military activity. Hezbollah vs IDF." },
+  { lat: 15.0, lng: 42.0, name: "Yemen — Houthi War", level: "high", radius: 300000, info: "Houthi forces attacking Red Sea shipping. US/UK strikes ongoing." },
+  { lat: 15.5, lng: 32.5, name: "Sudan Civil War", level: "high", radius: 400000, info: "SAF vs RSF civil war. Humanitarian crisis ongoing." },
+
+  // 🟡 ELEVATED TENSION ZONES
+  { lat: 23.5, lng: 120.0, name: "Taiwan Strait", level: "medium", radius: 200000, info: "PLA military exercises near Taiwan. High tension." },
+  { lat: 35.0, lng: 128.0, name: "Korean Peninsula", level: "medium", radius: 300000, info: "North Korea missile tests. DMZ tensions elevated." },
+  { lat: 25.0, lng: 55.0, name: "UAE — Persian Gulf", level: "medium", radius: 200000, info: "Iranian drone/missile attacks on UAE infrastructure." },
+  { lat: 24.0, lng: 45.0, name: "Saudi Arabia", level: "medium", radius: 300000, info: "Houthi missile attacks on Saudi territory ongoing." },
+  { lat: 26.0, lng: 50.5, name: "Bahrain — Gulf", level: "medium", radius: 150000, info: "US 5th Fleet HQ. Regional tension monitoring." },
+  { lat: 37.0, lng: 35.0, name: "Syria", level: "medium", radius: 250000, info: "Multiple factions. Israeli airstrikes. Turkish operations." },
+];
+
+function initMap() {
+  if (map) return;
+
+  map = L.map("worldMap", {
+    center: [28, 35],
+    zoom: 3,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  // Dark military map tiles
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    { maxZoom: 18, subdomains: "abcd" }
+  ).addTo(map);
+
+  // Add conflict zones as colored regions
+  conflictZones.forEach(zone => {
+    const color = zone.level === "high" ? "#ff4d6d" :
+                  zone.level === "medium" ? "#ffb300" : "#00ff9c";
+
+    const opacity = zone.level === "high" ? 0.35 : 0.20;
+
+    // Glowing circle region
+    L.circle([zone.lat, zone.lng], {
+      color: color,
+      fillColor: color,
+      fillOpacity: opacity,
+      radius: zone.radius,
+      weight: 2,
+    }).addTo(map).bindPopup(`
+      <div style="background:#06100c; color:#ffffff;
+                  font-family:'Courier New',monospace;
+                  padding:10px; border:1px solid ${color};
+                  border-radius:4px; min-width:200px;">
+        <div style="color:${color}; font-weight:bold;
+                    font-size:13px; margin-bottom:6px;">
+          ${zone.name}
+        </div>
+        <div style="color:#cccccc; font-size:11px;
+                    line-height:1.5;">
+          ${zone.info}
+        </div>
+        <div style="margin-top:6px;">
+          <span style="background:${color}33; color:${color};
+                       padding:2px 8px; border-radius:3px;
+                       font-size:10px; font-weight:bold;">
+            ${zone.level.toUpperCase()} ALERT
+          </span>
+        </div>
+      </div>
+    `);
+
+    // Center dot
+    L.circleMarker([zone.lat, zone.lng], {
+      radius: zone.level === "high" ? 6 : 4,
+      color: color,
+      fillColor: color,
+      fillOpacity: 1,
+      weight: 2
+    }).addTo(map);
+  });
+
+  // Fix grey area
+  setTimeout(() => map.invalidateSize(), 300);
+  updateThreatBars();
+
+  // Force fix grey tiles
+  setTimeout(() => {
+    map.invalidateSize(true);
+    map.setView([28, 35], 3);
+  }, 500);
+
+  setTimeout(() => {
+    map.invalidateSize(true);
+  }, 1000);
+
+  setTimeout(() => {
+    map.invalidateSize(true);
+  }, 2000);
+}
+
+function updateThreatBars() {
+  const high = conflictZones.filter(z => z.level === "high").length;
+  const med = conflictZones.filter(z => z.level === "medium").length;
+  const low = conflictZones.filter(z => z.level === "low").length;
+  const total = conflictZones.length;
+
+  setTimeout(() => {
+    const hb = document.getElementById("highBar");
+    const mb = document.getElementById("medBar");
+    const lb = document.getElementById("lowBar");
+    if (hb) hb.style.width = (high/total*100) + "%";
+    if (mb) mb.style.width = (med/total*100) + "%";
+    if (lb) lb.style.width = (low/total*100) + "%";
+    const hn = document.getElementById("highNum");
+    const mn = document.getElementById("medNum");
+    const ln = document.getElementById("lowNum");
+    if (hn) hn.textContent = high;
+    if (mn) mn.textContent = med;
+    if (ln) ln.textContent = low;
+    const ac = document.getElementById("alertCount");
+    if (ac) ac.textContent = high;
+  }, 500);
+}
+
+// ───── INTEL FEED ─────
+const intelItems = [
+  { level: "high", text: "[HIGH] Reuters: Military movement detected near border" },
+  { level: "medium", text: "[MED] BBC: Diplomatic talks scheduled for tomorrow" },
+  { level: "high", text: "[HIGH] Al Jazeera: Airspace closure announced" },
+  { level: "medium", text: "[MED] AP: Ceasefire negotiations ongoing" },
+  { level: "high", text: "[HIGH] 3 sources confirm naval deployment" },
+  { level: "low", text: "[LOW] Single source: Unverified troop movement" },
+];
+
+let intelIndex = 0;
+function updateIntelFeed() {
+  const feed = document.getElementById("intelFeed");
+  if (!feed) return;
+  const item = intelItems[intelIndex % intelItems.length];
+  const now = new Date().toUTCString().slice(17, 25);
+  const div = document.createElement("div");
+  div.className = `intel-item ${item.level}`;
+  div.textContent = `${now} ${item.text}`;
+  feed.insertBefore(div, feed.firstChild);
+  if (feed.children.length > 8) feed.removeChild(feed.lastChild);
+  intelIndex++;
+}
+setInterval(updateIntelFeed, 2500);
+
+// ───── RADAR SWEEP ─────
+let radarAngle = 0;
+function animateRadar() {
+  radarAngle = (radarAngle + 2) % 360;
+  const sweep = document.getElementById("radarSweep");
+  if (sweep) {
+    sweep.style.transform = `rotate(${radarAngle}deg)`;
+  }
+  requestAnimationFrame(animateRadar);
+}
+animateRadar();
+
+// Initialize map when home screen is active
+document.querySelector('[data-screen="home"]').addEventListener("click", () => {
+  setTimeout(initMap, 100);
+});
+
+// Init map on load
+setTimeout(() => {
+  initMap();
+  setTimeout(() => { if(map) map.invalidateSize(true); }, 300);
+  setTimeout(() => { if(map) map.invalidateSize(true); }, 800);
+  setTimeout(() => { if(map) map.invalidateSize(true); }, 1500);
+}, 500);

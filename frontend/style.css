@@ -462,3 +462,50 @@ body {
   box-shadow: 0 0 12px #00ff9c22;
   transform: translateX(4px);
 }
+
+/* ───── WAR ROOM LAYOUT ───── */
+.war-room {
+  display: grid;
+  grid-template-columns: 280px 1fr 220px;
+  gap: 14px;
+  height: calc(100vh - 200px);
+}
+.war-left { overflow-y: auto; }
+.war-right { overflow-y: auto; }
+.intel-feed {
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 11px;
+}
+.intel-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #0d2a1f;
+  color: #00ff9c;
+  line-height: 1.4;
+}
+.intel-item.high { color: #ff4d6d; }
+.intel-item.medium { color: #ffb300; }
+
+#worldMap {
+  height: 380px !important;
+  width: 100% !important;
+  border-radius: 8px;
+  border: 1px solid #0d4a33;
+  z-index: 1;
+}
+.leaflet-container {
+  background: #03060a !important;
+  font-family: 'Courier New', monospace !important;
+}
+.leaflet-tile-pane {
+  opacity: 0.85;
+}
+.military-popup .leaflet-popup-content-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.military-popup .leaflet-popup-tip {
+  background: #00ff9c !important;
+}
