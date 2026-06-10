@@ -17,7 +17,7 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_MODEL = "openai/gpt-oss-120b"
 
 # Tavily Settings
-TAVILY_MAX_RESULTS = 3 if DEV_MODE else 10
+TAVILY_MAX_RESULTS = 10
 TAVILY_SEARCH_DEPTH = "advanced"
 TAVILY_INCLUDE_DOMAINS = [
     "reuters.com",

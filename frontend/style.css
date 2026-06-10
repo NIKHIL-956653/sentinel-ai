@@ -491,14 +491,17 @@ body {
   width: 100% !important;
   border-radius: 8px;
   border: 1px solid #0d4a33;
+  position: relative;
   z-index: 1;
+  background: #020806 !important;
 }
+
 .leaflet-container {
-  background: #03060a !important;
-  font-family: 'Courier New', monospace !important;
+  background: #020806 !important;
 }
+
 .leaflet-tile-pane {
-  opacity: 0.85;
+  opacity: 1 !important;
 }
 .military-popup .leaflet-popup-content-wrapper {
   background: transparent !important;

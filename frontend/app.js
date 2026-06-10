@@ -581,8 +581,14 @@ function initMap() {
 
   // Dark military map tiles
   L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { maxZoom: 18 }
+  ).addTo(map);
+
+  // Dark overlay
+  L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    { maxZoom: 18, subdomains: "abcd" }
+    { maxZoom: 18, subdomains: "abcd", opacity: 0.9 }
   ).addTo(map);
 
   // Add conflict zones as colored regions
