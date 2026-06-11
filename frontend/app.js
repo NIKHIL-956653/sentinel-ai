@@ -1,6 +1,47 @@
 // ───── CONFIG ─────
 const API_BASE = "http://127.0.0.1:8000/api/v1";
 
+// Country flag emojis
+const countryFlags = {
+  "United States": "🇺🇸", "Russia": "🇷🇺", "China": "🇨🇳",
+  "India": "🇮🇳", "UAE": "🇦🇪", "Israel": "🇮🇱",
+  "Iran": "🇮🇷", "Pakistan": "🇵🇰", "United Kingdom": "🇬🇧",
+  "France": "🇫🇷", "Germany": "🇩🇪", "Japan": "🇯🇵",
+  "South Korea": "🇰🇷", "North Korea": "🇰🇵", "Turkey": "🇹🇷",
+  "Saudi Arabia": "🇸🇦", "Ukraine": "🇺🇦", "Italy": "🇮🇹",
+  "Spain": "🇪🇸", "Canada": "🇨🇦", "Australia": "🇦🇺",
+  "Brazil": "🇧🇷", "Mexico": "🇲🇽", "Egypt": "🇪🇬",
+  "Indonesia": "🇮🇩", "Vietnam": "🇻🇳", "Thailand": "🇹🇭",
+  "Poland": "🇵🇱", "Netherlands": "🇳🇱", "Sweden": "🇸🇪",
+  "Switzerland": "🇨🇭", "Greece": "🇬🇷", "Portugal": "🇵🇹",
+  "Norway": "🇳🇴", "Finland": "🇫🇮", "Denmark": "🇩🇰",
+  "Belgium": "🇧🇪", "Austria": "🇦🇹", "Iraq": "🇮🇶",
+  "Syria": "🇸🇾", "Lebanon": "🇱🇧", "Jordan": "🇯🇴",
+  "Qatar": "🇶🇦", "Kuwait": "🇰🇼", "Bahrain": "🇧🇭",
+  "Oman": "🇴🇲", "Yemen": "🇾🇪", "Afghanistan": "🇦🇫",
+  "Bangladesh": "🇧🇩", "Sri Lanka": "🇱🇰", "Myanmar": "🇲🇲",
+  "Malaysia": "🇲🇾", "Singapore": "🇸🇬", "Philippines": "🇵🇭",
+  "Taiwan": "🇹🇼", "Kazakhstan": "🇰🇿", "Uzbekistan": "🇺🇿",
+  "Azerbaijan": "🇦🇿", "Armenia": "🇦🇲", "Georgia": "🇬🇪",
+  "Belarus": "🇧🇾", "Romania": "🇷🇴", "Bulgaria": "🇧🇬",
+  "Hungary": "🇭🇺", "Czech Republic": "🇨🇿", "Serbia": "🇷🇸",
+  "Croatia": "🇭🇷", "Albania": "🇦🇱", "Lithuania": "🇱🇹",
+  "South Africa": "🇿🇦", "Nigeria": "🇳🇬", "Kenya": "🇰🇪",
+  "Ethiopia": "🇪🇹", "Sudan": "🇸🇩", "Libya": "🇱🇾",
+  "Algeria": "🇩🇿", "Morocco": "🇲🇦", "Tunisia": "🇹🇳",
+  "Ghana": "🇬🇭", "Argentina": "🇦🇷", "Chile": "🇨🇱",
+  "Colombia": "🇨🇴", "Peru": "🇵🇪", "Venezuela": "🇻🇪",
+  "Cuba": "🇨🇺", "Bolivia": "🇧🇴", "Ecuador": "🇪🇨",
+  "New Zealand": "🇳🇿", "Ireland": "🇮🇪", "Cambodia": "🇰🇭",
+  "Angola": "🇦🇴", "Cameroon": "🇨🇲", "Uganda": "🇺🇬",
+  "Zimbabwe": "🇿🇼", "Andorra": "🇦🇩", "Bosnia and Herzegovina": "🇧🇦",
+  "Kyrgyzstan": "🇰🇬", "Tajikistan": "🇹🇯", "Turkmenistan": "🇹🇲"
+};
+
+function getFlag(country) {
+  return countryFlags[country] || "🏳️";
+}
+
 // ───── BOOT SEQUENCE ─────
 const bootLines = [
   "> initializing secure uplink...",
@@ -76,6 +117,11 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById("screen-" + btn.dataset.screen).classList.add("active");
+
+    // Screen-specific renders
+    if (btn.dataset.screen === "nuclear") setTimeout(renderNuclear, 100);
+    if (btn.dataset.screen === "alliances") setTimeout(renderAlliances, 100);
+    if (btn.dataset.screen === "home") setTimeout(() => { if(map) map.invalidateSize(true); }, 100);
   });
 });
 
@@ -170,6 +216,7 @@ function renderNews(data) {
   });
 
   results.innerHTML = html;
+  updateTicker(stories);
 }
 
 // ───── COUNTRIES ─────
@@ -203,7 +250,7 @@ function renderCountry(p) {
 
   results.innerHTML = `
     <div class="panel">
-      <div class="panel-title">// ${(p.country||"").toUpperCase()} — MILITARY DOSSIER</div>
+      <div class="panel-title">${getFlag(p.country)} // ${(p.country||"").toUpperCase()} — MILITARY DOSSIER</div>
       <div style="color:#cccccc; font-size:13px; margin-bottom:16px; line-height:1.6;">
         ${p.military_summary || ""}
       </div>
@@ -527,7 +574,7 @@ async function renderCompare(a, b) {
   results.innerHTML = `
     <div class="grid-2">
       <div class="panel" style="border-color:#4fd1ff;">
-        <div class="panel-title" style="color:#4fd1ff;">🔵 ${(a.country||"").toUpperCase()}</div>
+        <div class="panel-title" style="color:#4fd1ff;">🔵 ${getFlag(a.country)} ${(a.country||"").toUpperCase()}</div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">🪖 ARMY</div><div class="stat-val green">${a.army_strength||"N/A"}</div></div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">⚓ NAVY</div><div class="stat-val cyan">${a.navy_strength||"N/A"}</div></div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">✈️ AIRFORCE</div><div class="stat-val amber">${a.airforce_strength||"N/A"}</div></div>
@@ -535,7 +582,7 @@ async function renderCompare(a, b) {
         <div class="stat-box"><div class="stat-label">🏆 RANK</div><div class="stat-val red">#${a.global_rank||"N/A"}</div></div>
       </div>
       <div class="panel" style="border-color:#ff4d6d;">
-        <div class="panel-title" style="color:#ff4d6d;">🔴 ${(b.country||"").toUpperCase()}</div>
+        <div class="panel-title" style="color:#ff4d6d;">🔴 ${getFlag(b.country)} ${(b.country||"").toUpperCase()}</div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">🪖 ARMY</div><div class="stat-val green">${b.army_strength||"N/A"}</div></div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">⚓ NAVY</div><div class="stat-val cyan">${b.navy_strength||"N/A"}</div></div>
         <div class="stat-box" style="margin-bottom:8px;"><div class="stat-label">✈️ AIRFORCE</div><div class="stat-val amber">${b.airforce_strength||"N/A"}</div></div>
@@ -718,10 +765,168 @@ function animateRadar() {
 }
 animateRadar();
 
+// ───── NEWS TICKER UPDATE ─────
+function updateTicker(stories) {
+  const ticker = document.getElementById("tickerContent");
+  if (!ticker || !stories || !stories.length) return;
+
+  let text = "";
+  stories.forEach(story => {
+    const conf = (story.confidence || "").toUpperCase();
+    const title = story.titles ? story.titles[0] : "";
+    text += ` ⚡ [${conf}] ${title} — `;
+  });
+  ticker.textContent = text;
+}
+
 // Initialize map when home screen is active
 document.querySelector('[data-screen="home"]').addEventListener("click", () => {
   setTimeout(initMap, 100);
 });
+
+// ───── NUCLEAR ARSENAL ─────
+const nuclearData = [
+  { country: "Russia", flag: "🇷🇺", warheads: 5580, triad: true, treaty: "New START (suspended 2023)" },
+  { country: "United States", flag: "🇺🇸", warheads: 5044, triad: true, treaty: "New START (suspended)" },
+  { country: "China", flag: "🇨🇳", warheads: 600, triad: true, treaty: "No-first-use policy declared" },
+  { country: "France", flag: "🇫🇷", warheads: 290, triad: false, treaty: "NPT signatory" },
+  { country: "United Kingdom", flag: "🇬🇧", warheads: 225, triad: false, treaty: "NPT signatory" },
+  { country: "India", flag: "🇮🇳", warheads: 180, triad: true, treaty: "No-first-use policy" },
+  { country: "Pakistan", flag: "🇵🇰", warheads: 170, triad: false, treaty: "Non-NPT state" },
+  { country: "Israel", flag: "🇮🇱", warheads: 90, triad: false, treaty: "Undeclared (estimated)" },
+  { country: "North Korea", flag: "🇰🇵", warheads: 50, triad: false, treaty: "Withdrew from NPT 2003" },
+];
+
+function renderNuclear() {
+  const bars = document.getElementById("nuclearBars");
+  if (!bars || bars.children.length > 0) return;
+
+  const max = nuclearData[0].warheads;
+  let html = "";
+
+  nuclearData.forEach(n => {
+    const pct = (n.warheads / max * 100).toFixed(1);
+    const color = n.warheads > 1000 ? "#ff4d6d" :
+                  n.warheads > 200 ? "#ffb300" : "#00ff9c";
+    html += `
+      <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
+        <div style="width:160px; color:#fff; font-size:13px; white-space:nowrap;">
+          ${n.flag} ${n.country}
+        </div>
+        <div style="flex:1; height:18px; background:#0d2a1f; border-radius:4px; overflow:hidden;">
+          <div style="width:${pct}%; height:100%; background:${color};
+                      box-shadow:0 0 10px ${color}; border-radius:4px;
+                      transition:width 1.5s ease;"></div>
+        </div>
+        <div style="width:70px; color:${color}; font-size:14px;
+                    font-weight:bold; text-align:right;">
+          ${n.warheads.toLocaleString()}
+        </div>
+      </div>`;
+  });
+  bars.innerHTML = html;
+
+  // Triad list
+  const triad = document.getElementById("triadList");
+  triad.innerHTML = nuclearData.filter(n => n.triad).map(n => `
+    <div style="border-left:3px solid #ff4d6d; padding:8px 12px; margin:8px 0;
+                background:#1a0a0a; color:#fff; font-size:13px;">
+      ${n.flag} <b>${n.country}</b>
+      <div style="color:#888; font-size:11px; margin-top:2px;">
+        ☢️ Land + Sea + Air launch capability
+      </div>
+    </div>`).join("");
+
+  // Treaty list
+  const treaty = document.getElementById("treatyList");
+  treaty.innerHTML = nuclearData.map(n => `
+    <div style="display:flex; justify-content:space-between; padding:6px 0;
+                border-bottom:1px solid #0d2a1f; font-size:12px;">
+      <span style="color:#fff;">${n.flag} ${n.country}</span>
+      <span style="color:#888;">${n.treaty}</span>
+    </div>`).join("");
+}
+
+
+// ───── ALLIANCES ─────
+const alliances = [
+  {
+    name: "NATO",
+    color: "#4fd1ff",
+    hq: "Brussels, Belgium",
+    members: 32,
+    keyMembers: "🇺🇸 USA, 🇬🇧 UK, 🇫🇷 France, 🇩🇪 Germany, 🇹🇷 Turkey, 🇵🇱 Poland",
+    info: "North Atlantic Treaty Organization. Article 5: attack on one = attack on all.",
+    coords: [[50.85, 4.35], [38.9, -77.0], [51.5, -0.1], [48.85, 2.35], [52.5, 13.4], [39.9, 32.8]]
+  },
+  {
+    name: "CSTO",
+    color: "#ff4d6d",
+    hq: "Moscow, Russia",
+    members: 6,
+    keyMembers: "🇷🇺 Russia, 🇧🇾 Belarus, 🇰🇿 Kazakhstan, 🇦🇲 Armenia",
+    info: "Collective Security Treaty Organization. Russia-led security bloc.",
+    coords: [[55.75, 37.6], [53.9, 27.5], [51.1, 71.4], [40.18, 44.5]]
+  },
+  {
+    name: "SCO",
+    color: "#ffb300",
+    hq: "Beijing, China",
+    members: 10,
+    keyMembers: "🇨🇳 China, 🇷🇺 Russia, 🇮🇳 India, 🇵🇰 Pakistan, 🇮🇷 Iran",
+    info: "Shanghai Cooperation Organisation. Eurasian political-military bloc.",
+    coords: [[39.9, 116.4], [55.75, 37.6], [28.6, 77.2], [33.7, 73.0], [35.7, 51.4]]
+  },
+  {
+    name: "QUAD",
+    color: "#00ff9c",
+    hq: "Informal alliance",
+    members: 4,
+    keyMembers: "🇺🇸 USA, 🇮🇳 India, 🇯🇵 Japan, 🇦🇺 Australia",
+    info: "Quadrilateral Security Dialogue. Indo-Pacific strategic forum.",
+    coords: [[38.9, -77.0], [28.6, 77.2], [35.7, 139.7], [-35.3, 149.1]]
+  },
+];
+
+let allianceMapObj = null;
+
+function renderAlliances() {
+  // Cards
+  const cards = document.getElementById("allianceCards");
+  if (cards && !cards.children.length) {
+    cards.innerHTML = alliances.map(a => `
+      <div class="panel" style="border-color:${a.color};">
+        <div class="panel-title" style="color:${a.color};">// ${a.name} — ${a.members} MEMBERS</div>
+        <div style="color:#fff; font-size:13px; margin-bottom:6px;">${a.keyMembers}</div>
+        <div style="color:#888; font-size:12px; line-height:1.5;">${a.info}</div>
+        <div style="color:#3a7a5c; font-size:11px; margin-top:8px;">📍 HQ: ${a.hq}</div>
+      </div>`).join("");
+  }
+
+  // Map
+  if (allianceMapObj) return;
+  allianceMapObj = L.map("allianceMap", {
+    center: [35, 40], zoom: 2, attributionControl: false
+  });
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    { maxZoom: 18, subdomains: "abcd" }
+  ).addTo(allianceMapObj);
+
+  alliances.forEach(a => {
+    a.coords.forEach(c => {
+      L.circleMarker(c, {
+        radius: 7, color: a.color, fillColor: a.color,
+        fillOpacity: 0.8, weight: 2
+      }).addTo(allianceMapObj).bindPopup(
+        `<b style="color:${a.color};">${a.name}</b>`
+      );
+    });
+  });
+
+  setTimeout(() => allianceMapObj.invalidateSize(true), 300);
+}
+
 
 // Init map on load
 setTimeout(() => {

@@ -512,3 +512,51 @@ body {
 .military-popup .leaflet-popup-tip {
   background: #00ff9c !important;
 }
+
+/* ───── NEWS TICKER ───── */
+.ticker-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: #020806;
+  border-top: 1px solid #0d4a33;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  overflow: hidden;
+}
+.ticker-label {
+  background: #ff4d6d;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 0 14px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  z-index: 2;
+}
+.ticker {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-content {
+  display: inline-block;
+  color: #00ff9c;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding-left: 100%;
+  animation: tickerScroll 40s linear infinite;
+}
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+.main-app {
+  padding-bottom: 50px;
+}

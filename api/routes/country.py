@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from dotenv import load_dotenv
+load_dotenv()
 from tools.wikipedia_tool import get_country_military_profile
 
 router = APIRouter()

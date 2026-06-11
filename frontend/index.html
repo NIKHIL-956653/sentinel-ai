@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENTINEL 2.0 — OSINT Intelligence Platform</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 
@@ -45,6 +45,8 @@
     <button class="nav-btn" data-screen="countries">🗂️ COUNTRIES</button>
     <button class="nav-btn" data-screen="leaders">👤 LEADERS</button>
     <button class="nav-btn" data-screen="compare">⚔️ COMPARE</button>
+    <button class="nav-btn" data-screen="nuclear">☢️ NUCLEAR</button>
+    <button class="nav-btn" data-screen="alliances">🤝 ALLIANCES</button>
   </nav>
 
   <!-- SCREEN: HOME / THREAT GRID -->
@@ -176,6 +178,44 @@
     </div>
     <div id="compareResults" class="results"></div>
   </section>
+
+  <!-- SCREEN: NUCLEAR -->
+  <section id="screen-nuclear" class="screen">
+    <div class="panel">
+      <div class="panel-title">// ☢️ GLOBAL NUCLEAR ARSENAL — DECLARED & ESTIMATED WARHEADS</div>
+      <div style="color:#888; font-size:11px; margin-bottom:16px;">Source: Federation of American Scientists (FAS) public estimates — OSINT data only</div>
+      <div id="nuclearBars"></div>
+    </div>
+    <div class="grid-2" style="margin-top:14px;">
+      <div class="panel">
+        <div class="panel-title">// NUCLEAR TRIAD CAPABILITY</div>
+        <div id="triadList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">// TREATY STATUS</div>
+        <div id="treatyList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: ALLIANCES -->
+  <section id="screen-alliances" class="screen">
+    <div class="panel">
+      <div class="panel-title">// 🤝 MILITARY ALLIANCES — GLOBAL POWER BLOCS</div>
+      <div id="allianceMap" style="height:340px; width:100%; border-radius:8px; border:1px solid #0d4a33;"></div>
+    </div>
+    <div id="allianceCards" class="grid-2" style="margin-top:14px;"></div>
+  </section>
+
+  <!-- NEWS TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-label">⚡ LIVE INTEL</div>
+    <div class="ticker">
+      <div class="ticker-content" id="tickerContent">
+        SENTINEL 2.0 ONLINE — Monitoring global OSINT sources — Real-time news verification active —
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer class="footer">
