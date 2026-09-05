@@ -1,5 +1,4 @@
-import requests
-from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
+from tools.llm import chat, LLMError
 
 def summarize_article(title: str, content: str, source: str) -> str:
     """
@@ -27,35 +26,10 @@ Keep it concise, factual, and intelligence-focused.
 Format it clearly with the headers."""
 
     try:
-        response = requests.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "openai/gpt-oss-120b",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                "max_tokens": 500
-            }
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            summary = data['choices'][0]['message']['content']
-            print(f"✅ Summary generated for: {title[:30]}...")
-            return summary
-        else:
-            print(f"❌ OpenRouter error: {response.status_code}")
-            print(f"❌ Response: {response.text}")  # ADD THIS LINE!
-            return "Summary unavailable at this time."
-            
-    except Exception as e:
+        summary = chat(prompt, max_tokens=500)
+        print(f"✅ Summary generated for: {title[:30]}...")
+        return summary
+    except LLMError as e:
         print(f"❌ Summarizer error: {e}")
         return "Summary unavailable at this time."
 

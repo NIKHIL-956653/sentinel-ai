@@ -1,13 +1,43 @@
+"""
+Story grouping + confidence scoring.
+
+Similarity = Jaccard overlap of content words (stopwords removed) with a minimum of two shared
+words. Replaced difflib.SequenceMatcher on raw titles, which over-merged anything sharing a
+country name: on eval/dataset.json clustering F1 went 0.47 → 0.83 (see eval/run_eval.py).
+"""
+import re
 from difflib import SequenceMatcher
 
-def calculate_similarity(text1: str, text2: str) -> float:
-    """Calculate similarity between two texts"""
-    return SequenceMatcher(None, 
-                          text1.lower(), 
-                          text2.lower()).ratio()
+STOPWORDS = set("""
+a an the of in on at to for from by with and or as after amid over into onto via
+says say said its their his her new two three is are was were be been has have had
+""".split())
 
-def group_similar_articles(articles: list, 
-                          threshold: float = 0.3) -> list:
+SIMILARITY_THRESHOLD = 0.15   # tuned on the synthetic eval set; see eval/results.json
+MIN_SHARED_WORDS = 2
+
+
+def content_words(text: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9]+", (text or "").lower())
+            if w not in STOPWORDS and len(w) > 2}
+
+
+def calculate_similarity(text1: str, text2: str) -> float:
+    """Jaccard similarity of content words; 0 unless at least MIN_SHARED_WORDS overlap."""
+    a, b = content_words(text1), content_words(text2)
+    shared = a & b
+    if len(shared) < MIN_SHARED_WORDS:
+        return 0.0
+    return len(shared) / len(a | b)
+
+
+def sequence_similarity(text1: str, text2: str) -> float:
+    """Legacy character-level similarity (kept for comparison in the eval)."""
+    return SequenceMatcher(None, text1.lower(), text2.lower()).ratio()
+
+
+def group_similar_articles(articles: list,
+                          threshold: float = SIMILARITY_THRESHOLD) -> list:
     """Group articles covering the same story"""
     
     groups = []
@@ -32,7 +62,7 @@ def group_similar_articles(articles: list,
                 other["title"]
             )
             
-            if similarity > threshold:
+            if similarity >= threshold:
                 group["articles"].append(other)
                 group["sources"].append(other["source"])
                 group["titles"].append(other["title"])

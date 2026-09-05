@@ -1,5 +1,21 @@
 // ───── CONFIG ─────
-const API_BASE = "http://127.0.0.1:8000/api/v1";
+// Backend URL resolution:
+//  1. window.SENTINEL_API_BASE (set in index.html) if given — e.g. frontend on GitHub Pages, API on Render
+//  2. same origin when this page is served by FastAPI itself (http://host/app/)
+//  3. http://127.0.0.1:8000 when opened as a file:// during local dev
+const API_BASE = (window.SENTINEL_API_BASE
+  || (location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:8000")) + "/api/v1";
+const API_KEY = window.SENTINEL_API_KEY || "";
+
+// All backend calls go through here: attaches the API key and turns 401/429 into readable errors.
+async function apiFetch(url, opts = {}) {
+  const headers = Object.assign({}, opts.headers || {});
+  if (API_KEY) headers["X-API-Key"] = API_KEY;
+  const res = await fetch(url, Object.assign({}, opts, { headers }));
+  if (res.status === 401) throw new Error("API key missing or invalid (set window.SENTINEL_API_KEY)");
+  if (res.status === 429) throw new Error("Rate limit reached — wait a minute and try again");
+  return res;
+}
 
 // Country flag emojis
 const countryFlags = {
@@ -65,6 +81,9 @@ function runBoot() {
       document.getElementById("bootScreen").style.display = "none";
       document.getElementById("mainApp").style.display = "block";
       startBgRain();
+      initMap();          // container is visible now, so Leaflet measures the real size
+      loadSystemStats();  // real numbers for SOURCES / VERIFIED / intel feed / ticker / map
+      loadWatchlist();
     }, 600);
   }
 }
@@ -125,6 +144,66 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
   });
 });
 
+// ───── WATCHLIST ─────
+async function loadWatchlist() {
+  const panel = document.getElementById("watchPanel");
+  const list = document.getElementById("watchList");
+  const meta = document.getElementById("watchMeta");
+  if (!panel) return;
+  try {
+    const res = await apiFetch(`${API_BASE}/watchlist`);
+    const data = await res.json();
+    const watches = data.watches || [];
+    panel.style.display = watches.length ? "block" : "none";
+    meta.textContent = `every ${data.interval_minutes} min · Telegram ${data.telegram_configured ? "connected" : "not configured"}`;
+    list.innerHTML = watches.map(w => `
+      <span style="border:1px solid #ffb30066; border-radius:14px; padding:4px 10px; font-size:12px; color:#ffb300;">
+        🔔 ${w.query}
+        <span style="color:#3a7a5c; font-size:10px;">${w.last_run ? "· last " + new Date(w.last_run).toUTCString().slice(5, 22) : "· never run"} · ${w.seen_count} seen</span>
+        <button onclick="removeWatch('${w.query.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#ff4d6d; cursor:pointer; margin-left:4px;">✕</button>
+      </span>`).join("");
+  } catch (err) { /* backend offline — panel stays hidden */ }
+}
+
+async function addWatch() {
+  const q = document.getElementById("newsQuery").value.trim();
+  const status = document.getElementById("watchStatus");
+  if (!q) return;
+  try {
+    const res = await apiFetch(`${API_BASE}/watchlist`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q }) });
+    const data = await res.json();
+    if (status) status.textContent = data.status === "exists" ? "already watching" : data.status;
+    loadWatchlist();
+  } catch (err) { if (status) status.textContent = err.message; }
+}
+
+async function removeWatch(q) {
+  try { await apiFetch(`${API_BASE}/watchlist?query=${encodeURIComponent(q)}`, { method: "DELETE" }); } catch (e) {}
+  loadWatchlist();
+}
+
+async function runWatchlist() {
+  const status = document.getElementById("watchStatus");
+  status.textContent = "running…";
+  try {
+    const res = await apiFetch(`${API_BASE}/watchlist/run`, { method: "POST" });
+    const r = await res.json();
+    status.textContent = r.status === "already_running" ? "already running" : `${r.watches} watches · ${r.alerts} alerts sent` + (r.errors && r.errors.length ? ` · ${r.errors.length} errors` : "");
+    loadWatchlist(); loadSystemStats();
+  } catch (err) { status.textContent = err.message; }
+}
+
+async function testAlert() {
+  const status = document.getElementById("watchStatus");
+  try {
+    const res = await apiFetch(`${API_BASE}/watchlist/test-alert`, { method: "POST" });
+    status.textContent = res.ok ? "test message sent ✔" : (await res.json()).detail;
+  } catch (err) { status.textContent = err.message; }
+}
+
+const watchBtn = document.getElementById("watchBtn");
+if (watchBtn) watchBtn.addEventListener("click", addWatch);
+
 // ───── NEWS SEARCH ─────
 const searchBtn = document.getElementById("searchBtn");
 if (searchBtn) {
@@ -141,16 +220,56 @@ async function searchNews() {
   results.innerHTML = '<div class="loading">SENTINEL gathering intelligence</div>';
 
   try {
-    const res = await fetch(`${API_BASE}/news`, {
+    const res = await apiFetch(`${API_BASE}/news`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: query })
     });
     const data = await res.json();
     renderNews(data);
+    loadSystemStats();
   } catch (err) {
     results.innerHTML = `<div class="news-card low">❌ Connection Error: ${err.message}<br><br>Make sure FastAPI backend is running!</div>`;
   }
+}
+
+// ── Verdict explanation ("why this verdict") ─────────────────────────────
+function whyPanel(story) {
+  const t = story.trust || { trusted: [], unknown: [], unreliable: [] };
+  const conf = (story.confidence || "").toUpperCase();
+  const n = story.source_count || (story.sources || []).length;
+  const score = story.trust_score ?? 0;
+  const list = (arr, color) => arr.length
+    ? arr.map(s => `<span style="color:${color};">${s}</span>`).join(", ")
+    : `<span style="color:#555;">none</span>`;
+
+  // the exact rule from agents/verifier_agent.py, in words
+  let rule;
+  if (t.trusted.length && score >= 2 && (conf === "HIGH" || conf === "MEDIUM"))
+    rule = `VERIFIED: at least one trusted outlet, trust score ${score} ≥ 2, and ${n} independent source${n===1?"":"s"} (${conf}).`;
+  else if (t.unreliable.length)
+    rule = `DISPUTED: ${t.unreliable.length} source${t.unreliable.length===1?"":"s"} on the unreliable list and not enough trusted coverage to outweigh it.`;
+  else if (conf === "LOW")
+    rule = `UNVERIFIED: only one source reports this so far.`;
+  else
+    rule = `NEEDS REVIEW: ${n} sources agree but none is on the trusted list — corroboration without a known-reliable outlet.`;
+
+  return `
+    <div class="why-panel" style="display:none;">
+      <div><b>Confidence</b> ${conf} — ${n} distinct source${n===1?"":"s"} cover this story (HIGH = 3+, MEDIUM = 2, LOW = 1)</div>
+      <div><b>Trusted</b> ${list(t.trusted, "#00ff9c")} <span style="color:#555;">(+2 each)</span></div>
+      <div><b>Unknown</b> ${list(t.unknown, "#ffb300")} <span style="color:#555;">(+1 each)</span></div>
+      <div><b>Unreliable</b> ${list(t.unreliable, "#ff4d6d")} <span style="color:#555;">(−2 each)</span></div>
+      <div><b>Trust score</b> ${score}</div>
+      <div style="margin-top:6px; color:#4fd1ff;">→ ${rule}</div>
+    </div>`;
+}
+
+function toggleWhy(btn) {
+  const panel = btn.closest(".news-card").querySelector(".why-panel");
+  const open = panel.style.display !== "none";
+  panel.style.display = open ? "none" : "block";
+  btn.textContent = open ? "WHY?" : "HIDE";
 }
 
 function renderNews(data) {
@@ -185,6 +304,15 @@ function renderNews(data) {
         <span class="red">🔴 LOW: ${low}</span>
         <span style="color:#ff6600;">⚡ CONTRADICTIONS: ${(data.contradictions || []).length}</span>
       </div>
+      ${(data.contradictions || []).length ? `
+      <div style="margin-top:10px; border-top:1px solid #0d4a33; padding-top:8px;">
+        ${data.contradictions.map(c => `
+          <div style="border-left:3px solid #ff6600; padding:6px 10px; margin:6px 0; background:#1a0e05; font-size:12px; color:#ddd;">
+            <span style="color:#ff6600; font-weight:bold;">⚡ ${c.conflict || "conflicting claims"}</span>
+            <span style="color:#666; font-size:10px; margin-left:6px;">[${(c.method || "keyword").toUpperCase()} JUDGE]</span>
+            <div style="color:#aaa; margin-top:3px;">“${c.story1}” <span style="color:#ff6600;">vs</span> “${c.story2}”</div>
+          </div>`).join("")}
+      </div>` : ""}
     </div>`;
 
   stories.forEach(story => {
@@ -197,9 +325,12 @@ function renderNews(data) {
         <div class="news-title">${story.titles ? story.titles[0] : "Story"}</div>
         <div class="news-meta">
           <span class="badge ${conf}">${conf.toUpperCase()}</span>
+          | ${story.verdict || ""}
           | 📡 ${story.source_count || sources.length} SOURCES
-          | 🛡️ TRUST: ${story.trust_score || 0}
+          | 🛡️ TRUST: ${story.trust_score ?? 0}
+          <button class="why-btn" onclick="toggleWhy(this)">WHY?</button>
         </div>
+        ${whyPanel(story)}
         <div style="margin-top:10px;">`;
 
     articles.forEach(a => {
@@ -229,7 +360,7 @@ if (countrySelect) {
     results.innerHTML = '<div class="loading">Decrypting military dossier</div>';
 
     try {
-      const res = await fetch(`${API_BASE}/country/${encodeURIComponent(country)}`);
+      const res = await apiFetch(`${API_BASE}/country/${encodeURIComponent(country)}`);
       const data = await res.json();
       renderCountry(data);
     } catch (err) {
@@ -260,8 +391,13 @@ function renderCountry(p) {
         <div class="stat-box"><div class="stat-label">⚓ NAVY</div><div class="stat-val cyan">${p.navy_strength||"N/A"}</div></div>
         <div class="stat-box"><div class="stat-label">✈️ AIRFORCE</div><div class="stat-val amber">${p.airforce_strength||"N/A"}</div></div>
         <div class="stat-box"><div class="stat-label">💰 BUDGET</div><div class="stat-val" style="color:#ffd700;font-size:16px;">${p.defense_budget||"N/A"}</div></div>
-        <div class="stat-box"><div class="stat-label">🏆 GLOBAL RANK</div><div class="stat-val red">#${p.global_rank||"N/A"}</div></div>
-        <div class="stat-box"><div class="stat-label">👥 ACTIVE</div><div class="stat-val green">${p.active_personnel||"N/A"}</div></div>
+        <div class="stat-box"><div class="stat-label">🏆 RANK${p.global_rank_basis ? " (SPEND)" : ""}</div><div class="stat-val red">${p.global_rank && p.global_rank !== "N/A" ? "#" + p.global_rank : "N/A"}</div></div>
+        <div class="stat-box"><div class="stat-label">👥 ACTIVE</div><div class="stat-val green" style="font-size:16px;">${p.active_personnel||"N/A"}</div></div>
+      </div>
+      <div style="color:#3a7a5c; font-size:10px; margin:-4px 0 12px; line-height:1.5;">
+        📊 ${p.data_source || "source unknown"}${p.data_provenance && p.data_provenance.fetched_at ? " · dataset fetched " + p.data_provenance.fetched_at.slice(0,10) : ""}
+        ${p.defense_budget_gdp_pct ? " · " + p.defense_budget_gdp_pct : ""}
+        ${p.estimates_note ? "<br>ℹ️ " + p.estimates_note : ""}
       </div>
 
       <div class="stat-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:16px;">
@@ -307,6 +443,14 @@ function renderCountry(p) {
   `;
 }
 
+// Grounding tag for LLM-generated items (weapons, special forces)
+function groundingTag(item) {
+  if (item && item.source_url) {
+    return `<a href="${item.source_url}" target="_blank" rel="noopener" style="color:#4fd1ff; font-size:10px; margin-left:6px;">📖 WIKIPEDIA</a>`;
+  }
+  return `<span style="color:#ffb300; font-size:10px; margin-left:6px; border:1px solid #ffb30055; padding:1px 5px; border-radius:3px;">AI-GENERATED · UNVERIFIED</span>`;
+}
+
 // Load weapons popup
 async function loadWeapons(country, category, clickedEl) {
   const detail = document.getElementById("weaponDetail");
@@ -316,7 +460,7 @@ async function loadWeapons(country, category, clickedEl) {
   detail.scrollIntoView({ behavior: "smooth" });
 
   try {
-    const res = await fetch(`${API_BASE}/weapons/${encodeURIComponent(country)}/${category}`);
+    const res = await apiFetch(`${API_BASE}/weapons/${encodeURIComponent(country)}/${category}`);
     const data = await res.json();
     const items = data.data || [];
 
@@ -326,14 +470,18 @@ async function loadWeapons(country, category, clickedEl) {
       warships: "🛳️"
     };
 
+    const g = data.grounding || {};
     let html = `
       <div class="panel">
-        <div class="panel-title">${icons[category]||"⚔️"} ${country.toUpperCase()} — ${category.replace("_"," ").toUpperCase()}</div>`;
+        <div class="panel-title">${icons[category]||"⚔️"} ${country.toUpperCase()} — ${category.replace("_"," ").toUpperCase()}</div>
+        <div style="color:#3a7a5c; font-size:10px; margin:4px 0 8px;">
+          🤖 AI-generated list · ${g.grounded ?? 0}/${g.total ?? items.length} verified against Wikipedia · unverified items are marked
+        </div>`;
 
     items.forEach(item => {
       html += `
-        <div style="border-left:3px solid #00ff9c; padding:10px 14px; margin:10px 0; background:#0a1a0a; border-radius:0 8px 8px 0;">
-          <div style="color:#00ff9c; font-weight:bold; font-size:14px;">${item.name||"Unknown"}</div>
+        <div style="border-left:3px solid ${item.grounded ? "#00ff9c" : "#ffb300"}; padding:10px 14px; margin:10px 0; background:#0a1a0a; border-radius:0 8px 8px 0;">
+          <div style="color:#00ff9c; font-weight:bold; font-size:14px;">${item.name||"Unknown"} ${groundingTag(item)}</div>
           <div style="color:#888; font-size:11px; margin:4px 0;">
             ${item.year ? "📅 "+item.year : ""}
             ${item.type ? " | 🎯 "+item.type : ""}
@@ -360,7 +508,7 @@ async function loadSpecialForces(country) {
   detail.scrollIntoView({ behavior: "smooth" });
 
   try {
-    const res = await fetch(`${API_BASE}/special-forces/${encodeURIComponent(country)}`);
+    const res = await apiFetch(`${API_BASE}/special-forces/${encodeURIComponent(country)}`);
     const data = await res.json();
     const forces = data.forces || [];
 
@@ -368,10 +516,17 @@ async function loadSpecialForces(country) {
       <div class="panel">
         <div class="panel-title">🕵️ ${country.toUpperCase()} — SPECIAL FORCES & INTELLIGENCE</div>`;
 
+    const g = data.grounding || {};
+    html += `<div style="color:#3a7a5c; font-size:10px; margin:4px 0 8px;">
+          🤖 AI-generated list · ${g.grounded ?? 0}/${g.total ?? forces.length} verified against Wikipedia · unverified items are marked
+        </div>`;
     forces.forEach(f => {
+      // legacy cache entries were plain strings; new ones are objects
+      const isObj = f && typeof f === "object";
+      const label = isObj ? `${f.emoji || "⚔️"} <b style="color:#4fd1ff;">${f.name || ""}</b> — ${f.description || ""} ${groundingTag(f)}` : f;
       html += `
-        <div style="border-left:3px solid #4fd1ff; padding:8px 12px; margin:8px 0; background:#050f1a; border-radius:0 8px 8px 0; color:#cccccc; font-size:13px;">
-          ${f}
+        <div style="border-left:3px solid ${isObj && f.grounded ? "#4fd1ff" : "#ffb300"}; padding:8px 12px; margin:8px 0; background:#050f1a; border-radius:0 8px 8px 0; color:#cccccc; font-size:13px;">
+          ${label}
         </div>`;
     });
 
@@ -391,7 +546,7 @@ if (loadLeaders) {
     results.innerHTML = '<div class="loading">Intercepting statements</div>';
 
     try {
-      const res = await fetch(`${API_BASE}/leaders`);
+      const res = await apiFetch(`${API_BASE}/leaders`);
       const data = await res.json();
       renderLeaders(data);
     } catch (err) {
@@ -503,7 +658,7 @@ async function loadLeaderAnalysis(s) {
   if (!analysisEl) return;
 
   try {
-    const res = await fetch(`${API_BASE}/leader-analysis`, {
+    const res = await apiFetch(`${API_BASE}/leader-analysis`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -542,8 +697,8 @@ if (compareBtn) {
 
     try {
       const [r1, r2] = await Promise.all([
-        fetch(`${API_BASE}/country/${encodeURIComponent(c1)}`).then(r => r.json()),
-        fetch(`${API_BASE}/country/${encodeURIComponent(c2)}`).then(r => r.json())
+        apiFetch(`${API_BASE}/country/${encodeURIComponent(c1)}`).then(r => r.json()),
+        apiFetch(`${API_BASE}/country/${encodeURIComponent(c2)}`).then(r => r.json())
       ]);
       await renderCompare(r1, r2);
     } catch (err) {
@@ -558,7 +713,7 @@ async function renderCompare(a, b) {
   // AI Winner Analysis
   let winnerHtml = "";
   try {
-    const res = await fetch(`${API_BASE}/compare-analysis`, {
+    const res = await apiFetch(`${API_BASE}/compare-analysis`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ country1: a, country2: b })
@@ -597,24 +752,8 @@ async function renderCompare(a, b) {
 let map = null;
 let newsMarkers = [];
 
-// Conflict zones with coordinates
-const conflictZones = [
-  // 🔴 ACTIVE WAR ZONES
-  { lat: 49.0, lng: 31.0, name: "Ukraine — Russia War", level: "high", radius: 500000, info: "Active war since Feb 2022. Russian forces vs Ukrainian Armed Forces." },
-  { lat: 31.5, lng: 34.8, name: "Gaza — Israel War", level: "high", radius: 80000, info: "Active military operations. IDF vs Hamas since Oct 2023." },
-  { lat: 32.5, lng: 53.0, name: "Iran — US/Israel Conflict", level: "high", radius: 600000, info: "US + Israeli strikes on Iran began Feb 2026. Active conflict." },
-  { lat: 33.5, lng: 35.8, name: "Lebanon — Israel Border", level: "high", radius: 150000, info: "Cross-border military activity. Hezbollah vs IDF." },
-  { lat: 15.0, lng: 42.0, name: "Yemen — Houthi War", level: "high", radius: 300000, info: "Houthi forces attacking Red Sea shipping. US/UK strikes ongoing." },
-  { lat: 15.5, lng: 32.5, name: "Sudan Civil War", level: "high", radius: 400000, info: "SAF vs RSF civil war. Humanitarian crisis ongoing." },
-
-  // 🟡 ELEVATED TENSION ZONES
-  { lat: 23.5, lng: 120.0, name: "Taiwan Strait", level: "medium", radius: 200000, info: "PLA military exercises near Taiwan. High tension." },
-  { lat: 35.0, lng: 128.0, name: "Korean Peninsula", level: "medium", radius: 300000, info: "North Korea missile tests. DMZ tensions elevated." },
-  { lat: 25.0, lng: 55.0, name: "UAE — Persian Gulf", level: "medium", radius: 200000, info: "Iranian drone/missile attacks on UAE infrastructure." },
-  { lat: 24.0, lng: 45.0, name: "Saudi Arabia", level: "medium", radius: 300000, info: "Houthi missile attacks on Saudi territory ongoing." },
-  { lat: 26.0, lng: 50.5, name: "Bahrain — Gulf", level: "medium", radius: 150000, info: "US 5th Fleet HQ. Regional tension monitoring." },
-  { lat: 37.0, lng: 35.0, name: "Syria", level: "medium", radius: 250000, info: "Multiple factions. Israeli airstrikes. Turkish operations." },
-];
+// Live story markers (populated from /recent by plotStories) — replaces the old hardcoded zone list
+let storyLayer = null;
 
 function initMap() {
   if (map) return;
@@ -628,115 +767,112 @@ function initMap() {
 
   // Dark military map tiles
   L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { maxZoom: 18 }
-  ).addTo(map);
-
-  // Dark overlay
-  L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    { maxZoom: 18, subdomains: "abcd", opacity: 0.9 }
+    { maxZoom: 18, subdomains: "abcd" }
   ).addTo(map);
 
-  // Add conflict zones as colored regions
-  conflictZones.forEach(zone => {
-    const color = zone.level === "high" ? "#ff4d6d" :
-                  zone.level === "medium" ? "#ffb300" : "#00ff9c";
+  storyLayer = L.layerGroup().addTo(map);
+  plotStories(window.__lastStories || []);
 
-    const opacity = zone.level === "high" ? 0.35 : 0.20;
-
-    // Glowing circle region
-    L.circle([zone.lat, zone.lng], {
-      color: color,
-      fillColor: color,
-      fillOpacity: opacity,
-      radius: zone.radius,
-      weight: 2,
-    }).addTo(map).bindPopup(`
-      <div style="background:#06100c; color:#ffffff;
-                  font-family:'Courier New',monospace;
-                  padding:10px; border:1px solid ${color};
-                  border-radius:4px; min-width:200px;">
-        <div style="color:${color}; font-weight:bold;
-                    font-size:13px; margin-bottom:6px;">
-          ${zone.name}
-        </div>
-        <div style="color:#cccccc; font-size:11px;
-                    line-height:1.5;">
-          ${zone.info}
-        </div>
-        <div style="margin-top:6px;">
-          <span style="background:${color}33; color:${color};
-                       padding:2px 8px; border-radius:3px;
-                       font-size:10px; font-weight:bold;">
-            ${zone.level.toUpperCase()} ALERT
-          </span>
-        </div>
-      </div>
-    `);
-
-    // Center dot
-    L.circleMarker([zone.lat, zone.lng], {
-      radius: zone.level === "high" ? 6 : 4,
-      color: color,
-      fillColor: color,
-      fillOpacity: 1,
-      weight: 2
-    }).addTo(map);
-  });
-
-  // Fix grey area
-  setTimeout(() => map.invalidateSize(), 300);
+  // One resize pass after layout settles (container is already visible at this point)
+  setTimeout(() => map.invalidateSize(true), 300);
   updateThreatBars();
-
-  // Force fix grey tiles
-  setTimeout(() => {
-    map.invalidateSize(true);
-    map.setView([28, 35], 3);
-  }, 500);
-
-  setTimeout(() => {
-    map.invalidateSize(true);
-  }, 1000);
-
-  setTimeout(() => {
-    map.invalidateSize(true);
-  }, 2000);
 }
 
-function updateThreatBars() {
-  const high = conflictZones.filter(z => z.level === "high").length;
-  const med = conflictZones.filter(z => z.level === "medium").length;
-  const low = conflictZones.filter(z => z.level === "low").length;
-  const total = conflictZones.length;
+function updateThreatBars(stories) {
+  stories = stories || window.__lastStories || [];
+  const c = { high: 0, medium: 0, low: 0 };
+  stories.forEach(s => { const k = (s.confidence || "LOW").toLowerCase(); if (c[k] !== undefined) c[k]++; });
+  const total = stories.length || 1;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.style.width = (v / total * 100) + "%"; };
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("highBar", c.high); set("medBar", c.medium); set("lowBar", c.low);
+  txt("highNum", c.high); txt("medNum", c.medium); txt("lowNum", c.low);
+  txt("alertCount", (stories.filter(s => (s.verdict || "").startsWith("DISPUTED")).length));
 
-  setTimeout(() => {
-    const hb = document.getElementById("highBar");
-    const mb = document.getElementById("medBar");
-    const lb = document.getElementById("lowBar");
-    if (hb) hb.style.width = (high/total*100) + "%";
-    if (mb) mb.style.width = (med/total*100) + "%";
-    if (lb) lb.style.width = (low/total*100) + "%";
-    const hn = document.getElementById("highNum");
-    const mn = document.getElementById("medNum");
-    const ln = document.getElementById("lowNum");
-    if (hn) hn.textContent = high;
-    if (mn) mn.textContent = med;
-    if (ln) ln.textContent = low;
-    const ac = document.getElementById("alertCount");
-    if (ac) ac.textContent = high;
-  }, 500);
+  const countries = new Set(stories.filter(s => s.geo).map(s => s.geo.country));
+  const lvl = document.getElementById("threatLevel");
+  if (lvl) lvl.textContent = stories.length ? `${countries.size} REGION${countries.size === 1 ? "" : "S"}` : "STANDBY";
 }
 
-// ───── INTEL FEED ─────
-const intelItems = [
-  { level: "high", text: "[HIGH] Reuters: Military movement detected near border" },
-  { level: "medium", text: "[MED] BBC: Diplomatic talks scheduled for tomorrow" },
-  { level: "high", text: "[HIGH] Al Jazeera: Airspace closure announced" },
-  { level: "medium", text: "[MED] AP: Ceasefire negotiations ongoing" },
-  { level: "high", text: "[HIGH] 3 sources confirm naval deployment" },
-  { level: "low", text: "[LOW] Single source: Unverified troop movement" },
+// ───── LIVE MAP MARKERS ─────
+function plotStories(stories) {
+  if (!map || !storyLayer) return;
+  storyLayer.clearLayers();
+  const empty = document.getElementById("mapEmpty");
+  const geo = stories.filter(s => s.geo && typeof s.geo.lat === "number");
+  if (empty) empty.style.display = geo.length ? "none" : "flex";
+  if (!geo.length) return;
+
+  // group by country so 5 stories about one place become one bigger marker
+  const byCountry = {};
+  geo.forEach(s => { (byCountry[s.geo.country] = byCountry[s.geo.country] || { geo: s.geo, stories: [] }).stories.push(s); });
+
+  const colorFor = c => c === "HIGH" ? "#00ff9c" : c === "MEDIUM" ? "#ffb300" : "#ff4d6d";
+  Object.values(byCountry).forEach(({ geo: g, stories: list }) => {
+    const top = list.reduce((a, b) => rank(b.confidence) > rank(a.confidence) ? b : a, list[0]);
+    const color = colorFor((top.confidence || "").toUpperCase());
+    const radius = Math.min(6 + list.length * 3, 18);
+    const items = list.slice(0, 5).map(s => {
+      const a = (s.articles || [])[0] || {};
+      return `<div style="margin:4px 0;">
+        <span style="color:${colorFor((s.confidence||"").toUpperCase())}; font-weight:bold; font-size:10px;">${(s.confidence||"").toUpperCase()}</span>
+        <span style="color:#ddd; font-size:11px;">${s.titles ? s.titles[0] : ""}</span>
+        ${a.url ? `<a href="${a.url}" target="_blank" rel="noopener" style="color:#4fd1ff; font-size:10px; margin-left:4px;">↗</a>` : ""}
+      </div>`;
+    }).join("");
+    L.circleMarker([g.lat, g.lng], { radius, color, fillColor: color, fillOpacity: 0.55, weight: 2 })
+      .addTo(storyLayer)
+      .bindPopup(`
+        <div style="background:#06100c; color:#fff; font-family:'Courier New',monospace; padding:10px; border:1px solid ${color}; border-radius:4px; min-width:240px;">
+          <div style="color:${color}; font-weight:bold; font-size:13px; margin-bottom:4px;">${g.country} · ${list.length} stor${list.length === 1 ? "y" : "ies"}</div>
+          ${items}${list.length > 5 ? `<div style="color:#666; font-size:10px;">+${list.length - 5} more</div>` : ""}
+        </div>`);
+  });
+}
+function rank(c) { return { HIGH: 3, MEDIUM: 2, LOW: 1 }[(c || "").toUpperCase()] || 0; }
+
+// ───── INTEL FEED + SYSTEM STATS (real data from cached searches) ─────
+let intelItems = [
+  { level: "low", text: "[SYS] No intel cached yet — run a search in NEWS FEED" },
 ];
+
+async function loadSystemStats() {
+  const src = document.getElementById("srcCount");
+  const ver = document.getElementById("verifiedPct");
+  try {
+    const res = await apiFetch(`${API_BASE}/recent`);
+    const data = await res.json();
+    const searches = data.searches || [];
+    const stories = [];
+    searches.forEach(s => (s.results || []).forEach(st => stories.push(st)));
+
+    const sources = new Set();
+    stories.forEach(st => (st.sources || []).forEach(x => sources.add(x)));
+    const verified = stories.filter(st => (st.verdict || "").startsWith("VERIFIED")).length;
+
+    if (src) src.textContent = sources.size;
+    if (ver) ver.textContent = stories.length ? Math.round(verified / stories.length * 100) + "%" : "—";
+    window.__lastStories = stories;
+    plotStories(stories);
+    updateThreatBars(stories);
+
+    if (stories.length) {
+      const lvl = c => c === "HIGH" ? "high" : c === "MEDIUM" ? "medium" : "low";
+      const tag = c => c === "HIGH" ? "HIGH" : c === "MEDIUM" ? "MED" : "LOW";
+      intelItems = stories.slice(0, 12).map(st => ({
+        level: lvl(st.confidence),
+        text: `[${tag(st.confidence)}] ${(st.sources || [])[0] || "source"}: ${(st.titles || [])[0] || ""}`
+      }));
+      updateTicker(stories);
+    }
+  } catch (err) {
+    if (src) src.textContent = "—";
+    if (ver) ver.textContent = "—";
+    intelItems = [{ level: "low", text: "[SYS] Backend offline — start FastAPI to see live intel" }];
+    updateThreatBars([]);
+  }
+}
 
 let intelIndex = 0;
 function updateIntelFeed() {
@@ -778,11 +914,6 @@ function updateTicker(stories) {
   });
   ticker.textContent = text;
 }
-
-// Initialize map when home screen is active
-document.querySelector('[data-screen="home"]').addEventListener("click", () => {
-  setTimeout(initMap, 100);
-});
 
 // ───── NUCLEAR ARSENAL ─────
 const nuclearData = [
@@ -928,10 +1059,4 @@ function renderAlliances() {
 }
 
 
-// Init map on load
-setTimeout(() => {
-  initMap();
-  setTimeout(() => { if(map) map.invalidateSize(true); }, 300);
-  setTimeout(() => { if(map) map.invalidateSize(true); }, 800);
-  setTimeout(() => { if(map) map.invalidateSize(true); }, 1500);
-}, 500);
+// (map is initialised in runBoot() once #mainApp is visible)

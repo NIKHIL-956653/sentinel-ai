@@ -560,3 +560,43 @@ body {
 .main-app {
   padding-bottom: 50px;
 }
+
+/* ── verdict explanation ─────────────────────────────────────────────── */
+.why-btn {
+  margin-left: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: 1px;
+  background: transparent; color: #4fd1ff; border: 1px solid #4fd1ff66; border-radius: 3px; cursor: pointer;
+}
+.why-btn:hover { background: #4fd1ff22; }
+.why-panel {
+  margin-top: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.7; color: #bbb;
+  background: #06100c; border: 1px dashed #0d4a33; border-radius: 6px;
+}
+.why-panel b { color: #ddd; display: inline-block; min-width: 90px; }
+
+/* ── mobile / narrow screens ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .war-room { grid-template-columns: 1fr; height: auto; }
+  .war-left, .war-right { overflow: visible; }
+  .war-right { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .war-right .panel { margin-top: 0 !important; }
+}
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  .header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .nav {
+    overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap;
+    padding-bottom: 6px; scrollbar-width: none; margin: 12px 0;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn { flex: 0 0 auto; padding: 9px 12px; font-size: 12px; }
+  .war-right { grid-template-columns: 1fr; }
+  .search-bar { flex-wrap: wrap; }
+  .search-bar input, .search-bar select { flex: 1 1 100%; min-width: 0; }
+  .search-bar .btn-primary { flex: 1 1 auto; }
+  .stat-grid { grid-template-columns: 1fr 1fr !important; }
+  #worldMap { height: 300px !important; }
+  .news-meta { line-height: 2; }
+  .why-panel b { min-width: 70px; }
+  .compare-selects { flex-direction: column; }
+  .compare-selects select { width: 100%; }
+}

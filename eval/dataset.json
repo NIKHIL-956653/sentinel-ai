@@ -1,0 +1,98 @@
+{
+  "_about": "SYNTHETIC evaluation set for SENTINEL AI. Place names (Northland, Southmark, Eastria, Westoria, Karim, Port Velen) are fictional so no line here describes a real event. Purpose: regression-test the deterministic pipeline (story grouping, verdict rule, contradiction detection) and measure the LLM judge against the keyword heuristic. Extend with real, dated cases as they are collected.",
+
+  "clustering": [
+    {
+      "id": "c1",
+      "headlines": [
+        {"title": "Northland forces enter border town of Karim", "cluster": "karim"},
+        {"title": "Karim falls as Northland troops advance", "cluster": "karim"},
+        {"title": "Northland army takes Karim after two-day assault", "cluster": "karim"},
+        {"title": "Southmark parliament approves record defence budget", "cluster": "budget"},
+        {"title": "Southmark lawmakers back largest military spending bill in decades", "cluster": "budget"}
+      ]
+    },
+    {
+      "id": "c2",
+      "headlines": [
+        {"title": "Eastria test-fires long-range missile over the northern sea", "cluster": "missile"},
+        {"title": "Eastria missile launch draws condemnation from neighbours", "cluster": "missile"},
+        {"title": "Westoria and Southmark begin joint naval exercise", "cluster": "exercise"},
+        {"title": "Joint Westoria-Southmark drills start in the eastern gulf", "cluster": "exercise"},
+        {"title": "Port Velen refinery fire under control, officials say", "cluster": "fire"}
+      ]
+    },
+    {
+      "id": "c3",
+      "headlines": [
+        {"title": "Ceasefire announced between Northland and Southmark", "cluster": "ceasefire"},
+        {"title": "Northland, Southmark agree to halt fighting from midnight", "cluster": "ceasefire"},
+        {"title": "Truce takes effect along the Northland-Southmark front", "cluster": "ceasefire"},
+        {"title": "Eastria expels three Westorian diplomats", "cluster": "diplomats"},
+        {"title": "Westoria recalls envoys after Eastria expulsions", "cluster": "diplomats"}
+      ]
+    },
+    {
+      "id": "c4",
+      "headlines": [
+        {"title": "Northland navy seizes tanker in the strait", "cluster": "tanker"},
+        {"title": "Tanker seized by Northland patrol boats, crew detained", "cluster": "tanker"},
+        {"title": "Southmark grounds fighter fleet after crash", "cluster": "crash"},
+        {"title": "Southmark air force halts flights following jet crash", "cluster": "crash"},
+        {"title": "Eastria unveils new main battle tank at parade", "cluster": "tank"},
+        {"title": "New Eastrian tank makes public debut", "cluster": "tank"}
+      ]
+    },
+    {
+      "id": "c5",
+      "headlines": [
+        {"title": "Northland forces enter border town of Karim", "cluster": "karim"},
+        {"title": "Northland forces enter border town of Karim, residents flee", "cluster": "karim"},
+        {"title": "Northland forces withdraw from Karim outskirts", "cluster": "withdraw"},
+        {"title": "Westoria pledges air-defence systems to Southmark", "cluster": "pledge"},
+        {"title": "Westoria to send air-defence batteries to Southmark", "cluster": "pledge"}
+      ]
+    }
+  ],
+
+  "contradictions": [
+    {"id": "p01", "a": "Ceasefire holds along the Northland front for a third day", "b": "Northland shelling continues despite announced ceasefire", "contradict": true},
+    {"id": "p02", "a": "Southmark says 12 soldiers killed in Karim strike", "b": "Southmark reports no casualties in Karim strike", "contradict": true},
+    {"id": "p03", "a": "Northland denies its jets crossed into Southmark airspace", "b": "Southmark radar confirms Northland jets crossed the border", "contradict": true},
+    {"id": "p04", "a": "Karim captured by Northland forces", "b": "Southmark troops still hold Karim, commander says", "contradict": true},
+    {"id": "p05", "a": "Eastria missile test was a success, state media says", "b": "Eastria missile exploded seconds after launch, analysts say", "contradict": true},
+    {"id": "p06", "a": "Tanker crew released by Northland after talks", "b": "Northland says tanker crew remain in custody", "contradict": true},
+    {"id": "p07", "a": "Westoria confirms it will send fighter jets to Southmark", "b": "Westoria rules out sending fighter jets to Southmark", "contradict": true},
+    {"id": "p08", "a": "Port Velen refinery fire fully extinguished", "b": "Port Velen refinery still burning, evacuation widened", "contradict": true},
+    {"id": "p09", "a": "Northland troops advance towards Southmark capital", "b": "Northland troops retreat from positions near Southmark capital", "contradict": true},
+    {"id": "p10", "a": "Eastria expelled three Westorian diplomats", "b": "Eastria says no Westorian diplomats have been expelled", "contradict": true},
+    {"id": "p11", "a": "Southmark parliament approved the defence budget", "b": "Southmark parliament rejected the defence budget", "contradict": true},
+    {"id": "p12", "a": "Northland navy seized one tanker in the strait", "b": "Northland navy seized three tankers in the strait", "contradict": true},
+
+    {"id": "n01", "a": "Peace talks between Northland and Southmark resume in Westoria", "b": "War-crimes investigators arrive in Karim", "contradict": false},
+    {"id": "n02", "a": "Ceasefire announced between Northland and Southmark", "b": "Northland, Southmark agree to halt fighting from midnight", "contradict": false},
+    {"id": "n03", "a": "Northland forces enter border town of Karim", "b": "Karim falls as Northland troops advance", "contradict": false},
+    {"id": "n04", "a": "Southmark grounds fighter fleet after crash", "b": "Southmark orders inquiry into fighter crash", "contradict": false},
+    {"id": "n05", "a": "Eastria test-fires long-range missile", "b": "Eastria parliament debates missile programme funding", "contradict": false},
+    {"id": "n06", "a": "Westoria pledges air-defence systems to Southmark", "b": "Westoria also considering training Southmark pilots", "contradict": false},
+    {"id": "n07", "a": "Northland claims victory in Karim", "b": "Northland victory in Karim comes at heavy cost, analysts say", "contradict": false},
+    {"id": "n08", "a": "Tanker seized by Northland patrol boats", "b": "Insurers raise premiums after tanker seizure", "contradict": false},
+    {"id": "n09", "a": "Northland advance slows amid heavy rain", "b": "Southmark retreat from Karim outskirts was orderly, officials say", "contradict": false},
+    {"id": "n10", "a": "Attack on Port Velen refinery kills two", "b": "Ceasefire talks postponed after Port Velen attack", "contradict": false},
+    {"id": "n11", "a": "Eastria unveils new main battle tank", "b": "Eastria tank based on older Westorian design, experts say", "contradict": false},
+    {"id": "n12", "a": "Southmark says 12 soldiers killed in Karim strike", "b": "Funerals held for Southmark soldiers killed in Karim", "contradict": false}
+  ],
+
+  "verdicts": [
+    {"id": "v01", "sources": ["reuters.com", "bbc.com", "aljazeera.com"], "confidence": "HIGH", "expected": "VERIFIED ✅"},
+    {"id": "v02", "sources": ["reuters.com", "unknownblog.net"], "confidence": "MEDIUM", "expected": "VERIFIED ✅"},
+    {"id": "v03", "sources": ["reuters.com"], "confidence": "LOW", "expected": "UNVERIFIED ⚠️"},
+    {"id": "v04", "sources": ["randomsite.org"], "confidence": "LOW", "expected": "UNVERIFIED ⚠️"},
+    {"id": "v05", "sources": ["rt.com"], "confidence": "LOW", "expected": "DISPUTED ❌"},
+    {"id": "v06", "sources": ["rt.com", "presstv.com"], "confidence": "MEDIUM", "expected": "DISPUTED ❌"},
+    {"id": "v07", "sources": ["bbc.com", "rt.com"], "confidence": "MEDIUM", "expected": "DISPUTED ❌"},
+    {"id": "v08", "sources": ["siteA.example", "siteB.example"], "confidence": "MEDIUM", "expected": "NEEDS REVIEW 🔍"},
+    {"id": "v09", "sources": ["bbc.com", "reuters.com", "rt.com"], "confidence": "HIGH", "expected": "VERIFIED ✅"},
+    {"id": "v10", "sources": ["globalresearch.ca", "siteA.example"], "confidence": "MEDIUM", "expected": "DISPUTED ❌"}
+  ]
+}

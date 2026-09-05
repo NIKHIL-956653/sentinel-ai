@@ -1,0 +1,2851 @@
+{
+ "_source": "World Bank Open Data (indicators sourced from SIPRI Military Expenditure Database and IISS Military Balance)",
+ "_license": "CC BY 4.0 — https://datacatalog.worldbank.org/public-licenses",
+ "_indicators": {
+  "MS.MIL.XPND.CD": "expenditure_usd",
+  "MS.MIL.XPND.GD.ZS": "expenditure_gdp_pct",
+  "MS.MIL.TOTL.P1": "personnel_total"
+ },
+ "_fetched_at": "2026-09-05T17:45:33Z",
+ "_ranking": "rank_by_expenditure = position by most recent military expenditure (current US$) among countries with data",
+ "countries": {
+  "ABW": {
+   "name": "Aruba"
+  },
+  "AFG": {
+   "name": "Afghanistan",
+   "expenditure_usd": {
+    "value": 278250788.014927,
+    "year": 2021
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.827933856217,
+    "year": 2021
+   },
+   "personnel_total": {
+    "value": 165000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 120
+  },
+  "AGO": {
+   "name": "Angola",
+   "expenditure_usd": {
+    "value": 922050813.886942,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.00049213337543,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 117000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 89
+  },
+  "ALB": {
+   "name": "Albania",
+   "expenditure_usd": {
+    "value": 535472559.206879,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.03786228936679,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 8000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 105
+  },
+  "AND": {
+   "name": "Andorra"
+  },
+  "ARE": {
+   "name": "United Arab Emirates",
+   "expenditure_usd": {
+    "value": 22755071477.1954,
+    "year": 2014
+   },
+   "expenditure_gdp_pct": {
+    "value": 5.64365135247024,
+    "year": 2014
+   },
+   "personnel_total": {
+    "value": 63000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 20
+  },
+  "ARG": {
+   "name": "Argentina",
+   "expenditure_usd": {
+    "value": 4177618452.20522,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.618350391157195,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 103000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 52
+  },
+  "ARM": {
+   "name": "Armenia",
+   "expenditure_usd": {
+    "value": 1418011710.7943,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 5.48174920349075,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 47000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 76
+  },
+  "ASM": {
+   "name": "American Samoa"
+  },
+  "ATG": {
+   "name": "Antigua and Barbuda",
+   "personnel_total": {
+    "value": 0,
+    "year": 2020
+   }
+  },
+  "AUS": {
+   "name": "Australia",
+   "expenditure_usd": {
+    "value": 33819572368.4211,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.8837883329175,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 60000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 15
+  },
+  "AUT": {
+   "name": "Austria",
+   "expenditure_usd": {
+    "value": 5258693991.82582,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.999843177036641,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 23000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 46
+  },
+  "AZE": {
+   "name": "Azerbaijan",
+   "expenditure_usd": {
+    "value": 3777088235.29412,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.99292395978321,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 82000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 54
+  },
+  "BDI": {
+   "name": "Burundi",
+   "expenditure_usd": {
+    "value": 171829784.578258,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.80127919699841,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 31000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 134
+  },
+  "BEL": {
+   "name": "Belgium",
+   "expenditure_usd": {
+    "value": 8561520105.74799,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.2770531266155,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 24000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 33
+  },
+  "BEN": {
+   "name": "Benin",
+   "expenditure_usd": {
+    "value": 154107719.732787,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.720549619940377,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 12000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 136
+  },
+  "BFA": {
+   "name": "Burkina Faso",
+   "expenditure_usd": {
+    "value": 1023672220.14258,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.67973196943363,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 11000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 85
+  },
+  "BGD": {
+   "name": "Bangladesh",
+   "expenditure_usd": {
+    "value": 4034561892.72044,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.941321120606305,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 227000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 53
+  },
+  "BGR": {
+   "name": "Bulgaria",
+   "expenditure_usd": {
+    "value": 2329834254.14365,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.14947328244853,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 37000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 64
+  },
+  "BHR": {
+   "name": "Bahrain",
+   "expenditure_usd": {
+    "value": 1383973404.25532,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.8946654057963,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 19000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 77
+  },
+  "BHS": {
+   "name": "Bahamas, The",
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   }
+  },
+  "BIH": {
+   "name": "Bosnia and Herzegovina",
+   "expenditure_usd": {
+    "value": 215974868.507652,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.747079920408854,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 11000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 126
+  },
+  "BLR": {
+   "name": "Belarus",
+   "expenditure_usd": {
+    "value": 1491391768.48364,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.07364910790144,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 158000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 72
+  },
+  "BLZ": {
+   "name": "Belize",
+   "expenditure_usd": {
+    "value": 30137800,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.898885869151742,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 156
+  },
+  "BMU": {
+   "name": "Bermuda"
+  },
+  "BOL": {
+   "name": "Bolivia",
+   "expenditure_usd": {
+    "value": 655130126.365488,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.37066364312669,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 71000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 96
+  },
+  "BRA": {
+   "name": "Brazil",
+   "expenditure_usd": {
+    "value": 20947723265.0291,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.972774559040702,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 762000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 22
+  },
+  "BRB": {
+   "name": "Barbados",
+   "personnel_total": {
+    "value": 1000,
+    "year": 2020
+   }
+  },
+  "BRN": {
+   "name": "Brunei Darussalam",
+   "expenditure_usd": {
+    "value": 558608208.955224,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.57781609529419,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 8000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 103
+  },
+  "BTN": {
+   "name": "Bhutan",
+   "personnel_total": {
+    "value": 6000,
+    "year": 2000
+   }
+  },
+  "BWA": {
+   "name": "Botswana",
+   "expenditure_usd": {
+    "value": 567822651.448639,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.83392800595041,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 9000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 101
+  },
+  "CAF": {
+   "name": "Central African Republic",
+   "expenditure_usd": {
+    "value": 71174969.9459274,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.51969119903231,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 10000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 150
+  },
+  "CAN": {
+   "name": "Canada",
+   "expenditure_usd": {
+    "value": 29346897810.219,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.31303419578919,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 72000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 16
+  },
+  "CHE": {
+   "name": "Switzerland",
+   "expenditure_usd": {
+    "value": 6722303543.86997,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.717812077671144,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 20000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 38
+  },
+  "CHI": {
+   "name": "Channel Islands"
+  },
+  "CHL": {
+   "name": "Chile",
+   "expenditure_usd": {
+    "value": 5105441707.26122,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.57780388625485,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 114000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 47
+  },
+  "CHN": {
+   "name": "China",
+   "expenditure_usd": {
+    "value": 313658330217.176,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.71129740345228,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2535000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 2
+  },
+  "CIV": {
+   "name": "Cote d'Ivoire",
+   "expenditure_usd": {
+    "value": 658353218.218127,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.762358993041457,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 27000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 95
+  },
+  "CMR": {
+   "name": "Cameroon",
+   "expenditure_usd": {
+    "value": 534852005.33635,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.00912763032385,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 34000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 106
+  },
+  "COD": {
+   "name": "Congo, Dem. Rep.",
+   "expenditure_usd": {
+    "value": 899187778.403836,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.22855267131451,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 134000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 92
+  },
+  "COG": {
+   "name": "Congo, Rep.",
+   "expenditure_usd": {
+    "value": 182044402.521739,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.18596121569308,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 12000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 130
+  },
+  "COL": {
+   "name": "Colombia",
+   "expenditure_usd": {
+    "value": 15096259111.9062,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.35903368303836,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 428000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 25
+  },
+  "COM": {
+   "name": "Comoros"
+  },
+  "CPV": {
+   "name": "Cabo Verde",
+   "expenditure_usd": {
+    "value": 16827224.9254434,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.623903407592831,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 162
+  },
+  "CRI": {
+   "name": "Costa Rica",
+   "expenditure_usd": {
+    "value": 0,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 10000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 164
+  },
+  "CUB": {
+   "name": "Cuba",
+   "expenditure_usd": {
+    "value": 128609126.95598,
+    "year": 2018
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.87620737245072,
+    "year": 2018
+   },
+   "personnel_total": {
+    "value": 76000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 138
+  },
+  "CUW": {
+   "name": "Curacao"
+  },
+  "CYM": {
+   "name": "Cayman Islands"
+  },
+  "CYP": {
+   "name": "Cyprus",
+   "expenditure_usd": {
+    "value": 598185755.607045,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.64735214954921,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 13000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 99
+  },
+  "CZE": {
+   "name": "Czechia",
+   "expenditure_usd": {
+    "value": 6524946704.27873,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.91680849222604,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 27000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 39
+  },
+  "DEU": {
+   "name": "Germany",
+   "expenditure_usd": {
+    "value": 88458476389.5109,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.89190377205494,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 183000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 4
+  },
+  "DJI": {
+   "name": "Djibouti",
+   "expenditure_usd": {
+    "value": 36274835.2755161,
+    "year": 2008
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.62758252462798,
+    "year": 2008
+   },
+   "personnel_total": {
+    "value": 13000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 154
+  },
+  "DMA": {
+   "name": "Dominica"
+  },
+  "DNK": {
+   "name": "Denmark",
+   "expenditure_usd": {
+    "value": 9958899778.69112,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.41617454160591,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 15000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 31
+  },
+  "DOM": {
+   "name": "Dominican Republic",
+   "expenditure_usd": {
+    "value": 980991970.499619,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.782420068931067,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 71000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 86
+  },
+  "DZA": {
+   "name": "Algeria",
+   "expenditure_usd": {
+    "value": 21811242555.0313,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 7.97145723551219,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 326000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 21
+  },
+  "ECU": {
+   "name": "Ecuador",
+   "expenditure_usd": {
+    "value": 2698000000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.22194770434425,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 42000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 58
+  },
+  "EGY": {
+   "name": "Egypt, Arab Rep.",
+   "expenditure_usd": {
+    "value": 2396211163.82267,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.665263620234986,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 836000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 63
+  },
+  "ERI": {
+   "name": "Eritrea",
+   "expenditure_usd": {
+    "value": 181583668.998912,
+    "year": 2003
+   },
+   "expenditure_gdp_pct": {
+    "value": 20.8657453093811,
+    "year": 2003
+   },
+   "personnel_total": {
+    "value": 202000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 131
+  },
+  "ESP": {
+   "name": "Spain",
+   "expenditure_usd": {
+    "value": 24615397928.7413,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.43210737406914,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 199000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 18
+  },
+  "EST": {
+   "name": "Estonia",
+   "expenditure_usd": {
+    "value": 1441919732.77431,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.37400221824601,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 7000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 73
+  },
+  "ETH": {
+   "name": "Ethiopia",
+   "expenditure_usd": {
+    "value": 921665263.86463,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.650506448320295,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 138000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 90
+  },
+  "FIN": {
+   "name": "Finland",
+   "expenditure_usd": {
+    "value": 6987848067.30834,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.29979173712597,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 22000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 37
+  },
+  "FJI": {
+   "name": "Fiji",
+   "expenditure_usd": {
+    "value": 77638335.6893706,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.3128793789726,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 4000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 149
+  },
+  "FRA": {
+   "name": "France",
+   "expenditure_usd": {
+    "value": 64675015306.1997,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.05257687860637,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 304000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 9
+  },
+  "FRO": {
+   "name": "Faroe Islands"
+  },
+  "FSM": {
+   "name": "Micronesia, Fed. Sts."
+  },
+  "GAB": {
+   "name": "Gabon",
+   "expenditure_usd": {
+    "value": 319095920.726509,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.538206793748,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 7000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 119
+  },
+  "GBR": {
+   "name": "United Kingdom",
+   "expenditure_usd": {
+    "value": 81763173069.6744,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.2786177901127,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 153000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 6
+  },
+  "GEO": {
+   "name": "Georgia",
+   "expenditure_usd": {
+    "value": 615864045.59285,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.86402941794564,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 26000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 98
+  },
+  "GHA": {
+   "name": "Ghana",
+   "expenditure_usd": {
+    "value": 268736705.433852,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.383994182354107,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 16000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 121
+  },
+  "GIB": {
+   "name": "Gibraltar"
+  },
+  "GIN": {
+   "name": "Guinea",
+   "expenditure_usd": {
+    "value": 562455950.499682,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.05370337042453,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 13000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 102
+  },
+  "GMB": {
+   "name": "Gambia, The",
+   "expenditure_usd": {
+    "value": 14433677.7042713,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.574440350261863,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 4000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 163
+  },
+  "GNB": {
+   "name": "Guinea-Bissau",
+   "expenditure_usd": {
+    "value": 25292392.1705683,
+    "year": 2023
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.2348847572106,
+    "year": 2023
+   },
+   "personnel_total": {
+    "value": 4000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 158
+  },
+  "GNQ": {
+   "name": "Equatorial Guinea",
+   "expenditure_usd": {
+    "value": 113135237.554975,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.982185856511218,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 141
+  },
+  "GRC": {
+   "name": "Greece",
+   "expenditure_usd": {
+    "value": 8021963044.4518,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.12797536550149,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 147000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 34
+  },
+  "GRD": {
+   "name": "Grenada"
+  },
+  "GRL": {
+   "name": "Greenland"
+  },
+  "GTM": {
+   "name": "Guatemala",
+   "expenditure_usd": {
+    "value": 415185334.034068,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.367622067360881,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 43000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 113
+  },
+  "GUM": {
+   "name": "Guam"
+  },
+  "GUY": {
+   "name": "Guyana",
+   "expenditure_usd": {
+    "value": 201841558.938087,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.868162254451279,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 3000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 128
+  },
+  "HKG": {
+   "name": "Hong Kong SAR, China"
+  },
+  "HND": {
+   "name": "Honduras",
+   "expenditure_usd": {
+    "value": 581271651.183095,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.57536270602411,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 23000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 100
+  },
+  "HRV": {
+   "name": "Croatia",
+   "expenditure_usd": {
+    "value": 1629055602.0691,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.79323424509814,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 20000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 69
+  },
+  "HTI": {
+   "name": "Haiti",
+   "expenditure_usd": {
+    "value": 19751091.2623219,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.068443100204951,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 161
+  },
+  "HUN": {
+   "name": "Hungary",
+   "expenditure_usd": {
+    "value": 4734698455.68824,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.15630980446665,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 46000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 49
+  },
+  "IDN": {
+   "name": "Indonesia",
+   "expenditure_usd": {
+    "value": 11042843809.9082,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.779216788275608,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 676000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 28
+  },
+  "IMN": {
+   "name": "Isle of Man"
+  },
+  "IND": {
+   "name": "India",
+   "expenditure_usd": {
+    "value": 86125976248.5524,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.2712033218142,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 3068000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 5
+  },
+  "IRL": {
+   "name": "Ireland",
+   "expenditure_usd": {
+    "value": 1330503579.37914,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.239096332495524,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 9000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 79
+  },
+  "IRN": {
+   "name": "Iran, Islamic Rep.",
+   "expenditure_usd": {
+    "value": 7891903306.81818,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.01043175751636,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 650000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 35
+  },
+  "IRQ": {
+   "name": "Iraq",
+   "expenditure_usd": {
+    "value": 6178546529.67549,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.35714058035714,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 459000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 40
+  },
+  "ISL": {
+   "name": "Iceland",
+   "expenditure_usd": {
+    "value": 0,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 0,
+    "year": 2020
+   },
+   "rank_by_expenditure": 165
+  },
+  "ISR": {
+   "name": "Israel",
+   "expenditure_usd": {
+    "value": 46505298369.3376,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 8.77671668977531,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 178000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 12
+  },
+  "ITA": {
+   "name": "Italy",
+   "expenditure_usd": {
+    "value": 37964578316.9022,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.60924561245844,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 338000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 14
+  },
+  "JAM": {
+   "name": "Jamaica",
+   "expenditure_usd": {
+    "value": 262511269.974231,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.27385736005958,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 6000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 122
+  },
+  "JOR": {
+   "name": "Jordan",
+   "expenditure_usd": {
+    "value": 2560281690.14085,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.80018703722722,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 116000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 61
+  },
+  "JPN": {
+   "name": "Japan",
+   "expenditure_usd": {
+    "value": 55273904316.7083,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.37139689580634,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 261000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 10
+  },
+  "KAZ": {
+   "name": "Kazakhstan",
+   "expenditure_usd": {
+    "value": 1208967905.89819,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.42842846956594,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 71000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 82
+  },
+  "KEN": {
+   "name": "Kenya",
+   "expenditure_usd": {
+    "value": 1231306436.54642,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.999546585264659,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 24000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 81
+  },
+  "KGZ": {
+   "name": "Kyrgyz Republic",
+   "expenditure_usd": {
+    "value": 473046660.875227,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.96620373701758,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 21000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 108
+  },
+  "KHM": {
+   "name": "Cambodia",
+   "expenditure_usd": {
+    "value": 720543532.173392,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.52066451977199,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 191000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 94
+  },
+  "KIR": {
+   "name": "Kiribati"
+  },
+  "KNA": {
+   "name": "St. Kitts and Nevis"
+  },
+  "KOR": {
+   "name": "Korea, Rep.",
+   "expenditure_usd": {
+    "value": 47571318596.7228,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.56205259386748,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 569000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 11
+  },
+  "KWT": {
+   "name": "Kuwait",
+   "expenditure_usd": {
+    "value": 7792925565.71038,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.84093247384389,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 25000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 36
+  },
+  "LAO": {
+   "name": "Lao PDR",
+   "expenditure_usd": {
+    "value": 22677713.1196136,
+    "year": 2013
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.189895181780941,
+    "year": 2013
+   },
+   "personnel_total": {
+    "value": 129000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 160
+  },
+  "LBN": {
+   "name": "Lebanon",
+   "expenditure_usd": {
+    "value": 635471571.906355,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.58828538225203,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 80000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 97
+  },
+  "LBR": {
+   "name": "Liberia",
+   "expenditure_usd": {
+    "value": 33825000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.711206896551724,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 155
+  },
+  "LBY": {
+   "name": "Libya",
+   "expenditure_usd": {
+    "value": 1573682777.31469,
+    "year": 2023
+   },
+   "expenditure_gdp_pct": {
+    "value": 5.28705130951195,
+    "year": 2023
+   },
+   "personnel_total": {
+    "value": 0,
+    "year": 2020
+   },
+   "rank_by_expenditure": 71
+  },
+  "LCA": {
+   "name": "St. Lucia"
+  },
+  "LIE": {
+   "name": "Liechtenstein"
+  },
+  "LKA": {
+   "name": "Sri Lanka",
+   "expenditure_usd": {
+    "value": 1333312353.41663,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.42539087177796,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 317000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 78
+  },
+  "LSO": {
+   "name": "Lesotho",
+   "expenditure_usd": {
+    "value": 36295976.9958149,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.56745014441231,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 153
+  },
+  "LTU": {
+   "name": "Lithuania",
+   "expenditure_usd": {
+    "value": 2627474141.71702,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.11817486440289,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 37000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 59
+  },
+  "LUX": {
+   "name": "Luxembourg",
+   "expenditure_usd": {
+    "value": 871643141.196422,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.962679157025622,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 93
+  },
+  "LVA": {
+   "name": "Latvia",
+   "expenditure_usd": {
+    "value": 1425694079.36724,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.25799154535171,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 9000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 75
+  },
+  "MAC": {
+   "name": "Macao SAR, China"
+  },
+  "MAF": {
+   "name": "St. Martin (French part)"
+  },
+  "MAR": {
+   "name": "Morocco",
+   "expenditure_usd": {
+    "value": 5517924399.23385,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.51575374206256,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 246000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 44
+  },
+  "MCO": {
+   "name": "Monaco"
+  },
+  "MDA": {
+   "name": "Moldova",
+   "expenditure_usd": {
+    "value": 110725502.000124,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.597780838491135,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 6000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 143
+  },
+  "MDG": {
+   "name": "Madagascar",
+   "expenditure_usd": {
+    "value": 121634246.7323,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.708648145396825,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 22000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 139
+  },
+  "MDV": {
+   "name": "Maldives",
+   "personnel_total": {
+    "value": 5000,
+    "year": 2000
+   }
+  },
+  "MEX": {
+   "name": "Mexico",
+   "expenditure_usd": {
+    "value": 16726425452.0934,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.893257529320534,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 341000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 23
+  },
+  "MHL": {
+   "name": "Marshall Islands"
+  },
+  "MKD": {
+   "name": "North Macedonia",
+   "expenditure_usd": {
+    "value": 353684979.985732,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.10352863426818,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 16000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 117
+  },
+  "MLI": {
+   "name": "Mali",
+   "expenditure_usd": {
+    "value": 929278520.861402,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.1981465701254,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 41000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 88
+  },
+  "MLT": {
+   "name": "Malta",
+   "expenditure_usd": {
+    "value": 109254896.361343,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.451123319487248,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 144
+  },
+  "MMR": {
+   "name": "Myanmar",
+   "expenditure_usd": {
+    "value": 5011272415.12673,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 6.79452485229039,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 463000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 48
+  },
+  "MNE": {
+   "name": "Montenegro",
+   "expenditure_usd": {
+    "value": 150033208.503973,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.83253539270475,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 12000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 137
+  },
+  "MNG": {
+   "name": "Mongolia",
+   "expenditure_usd": {
+    "value": 180843441.375323,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.742307300960191,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 18000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 132
+  },
+  "MNP": {
+   "name": "Northern Mariana Islands"
+  },
+  "MOZ": {
+   "name": "Mozambique",
+   "expenditure_usd": {
+    "value": 450448587.393598,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.99330115632931,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 11000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 109
+  },
+  "MRT": {
+   "name": "Mauritania",
+   "expenditure_usd": {
+    "value": 260059017.269229,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.15504682070845,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 21000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 123
+  },
+  "MUS": {
+   "name": "Mauritius",
+   "expenditure_usd": {
+    "value": 23009853.3257139,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.149590857574221,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 3000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 159
+  },
+  "MWI": {
+   "name": "Malawi",
+   "expenditure_usd": {
+    "value": 117589994.544906,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.02496048269861,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 15000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 140
+  },
+  "MYS": {
+   "name": "Malaysia",
+   "expenditure_usd": {
+    "value": 4312858466.81122,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.987556748730683,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 136000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 51
+  },
+  "NAM": {
+   "name": "Namibia",
+   "expenditure_usd": {
+    "value": 362392304.29255,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.73490195432496,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 16000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 116
+  },
+  "NCL": {
+   "name": "New Caledonia"
+  },
+  "NER": {
+   "name": "Niger",
+   "expenditure_usd": {
+    "value": 435880522.487372,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.24177586841643,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 10000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 110
+  },
+  "NGA": {
+   "name": "Nigeria",
+   "expenditure_usd": {
+    "value": 1133303623.27648,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.555429367236392,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 223000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 83
+  },
+  "NIC": {
+   "name": "Nicaragua",
+   "expenditure_usd": {
+    "value": 105264016.309888,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.545131278321867,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 12000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 145
+  },
+  "NLD": {
+   "name": "Netherlands",
+   "expenditure_usd": {
+    "value": 23179211260.1708,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.91642541759119,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 41000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 19
+  },
+  "NOR": {
+   "name": "Norway",
+   "expenditure_usd": {
+    "value": 10435320375.7091,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.09124111193175,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 25000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 29
+  },
+  "NPL": {
+   "name": "Nepal",
+   "expenditure_usd": {
+    "value": 426517834.461529,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.979452474186084,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 112000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 111
+  },
+  "NRU": {
+   "name": "Naoero"
+  },
+  "NZL": {
+   "name": "New Zealand",
+   "expenditure_usd": {
+    "value": 2998527517.58211,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.19404695449297,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 10000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 55
+  },
+  "OMN": {
+   "name": "Oman",
+   "expenditure_usd": {
+    "value": 5988296488.94668,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 5.59419531945284,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 47000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 42
+  },
+  "PAK": {
+   "name": "Pakistan",
+   "expenditure_usd": {
+    "value": 10165952756.2448,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.66760037007452,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 943000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 30
+  },
+  "PAN": {
+   "name": "Panama",
+   "expenditure_usd": {
+    "value": 0,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.974136501313688,
+    "year": 1999
+   },
+   "personnel_total": {
+    "value": 28000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 166
+  },
+  "PER": {
+   "name": "Peru",
+   "expenditure_usd": {
+    "value": 2565268613.71996,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.909288680359786,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 158000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 60
+  },
+  "PHL": {
+   "name": "Philippines",
+   "expenditure_usd": {
+    "value": 6117535232.86185,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.32426895346612,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 157000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 41
+  },
+  "PLW": {
+   "name": "Palau"
+  },
+  "PNG": {
+   "name": "Papua New Guinea",
+   "expenditure_usd": {
+    "value": 91005056.1232259,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.307995782327758,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 4000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 147
+  },
+  "POL": {
+   "name": "Poland",
+   "expenditure_usd": {
+    "value": 38000728652.37,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.15439387975356,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 189000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 13
+  },
+  "PRI": {
+   "name": "Puerto Rico (US)"
+  },
+  "PRK": {
+   "name": "Korea, Dem. People's Rep.",
+   "expenditure_usd": {
+    "value": 1604444444.44444,
+    "year": 2018
+   },
+   "personnel_total": {
+    "value": 1469000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 70
+  },
+  "PRT": {
+   "name": "Portugal",
+   "expenditure_usd": {
+    "value": 4641618584.64707,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.53226822745255,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 52000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 50
+  },
+  "PRY": {
+   "name": "Paraguay",
+   "expenditure_usd": {
+    "value": 413971348.08491,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.933106143624753,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 29000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 114
+  },
+  "PSE": {
+   "name": "West Bank and Gaza",
+   "personnel_total": {
+    "value": 0,
+    "year": 2020
+   }
+  },
+  "PYF": {
+   "name": "French Polynesia"
+  },
+  "QAT": {
+   "name": "Qatar",
+   "expenditure_usd": {
+    "value": 15412087912.0879,
+    "year": 2022
+   },
+   "expenditure_gdp_pct": {
+    "value": 6.50020565272303,
+    "year": 2022
+   },
+   "personnel_total": {
+    "value": 22000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 24
+  },
+  "ROU": {
+   "name": "Romania",
+   "expenditure_usd": {
+    "value": 8715729594.3219,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.29815245791591,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 128000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 32
+  },
+  "RUS": {
+   "name": "Russian Federation",
+   "expenditure_usd": {
+    "value": 148967275140.483,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 7.05233864500366,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1454000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 3
+  },
+  "RWA": {
+   "name": "Rwanda",
+   "expenditure_usd": {
+    "value": 175924380.585353,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.24772078121775,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 35000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 133
+  },
+  "SAU": {
+   "name": "Saudi Arabia",
+   "expenditure_usd": {
+    "value": 80330666666.6667,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 7.2981029390103,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 282000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 7
+  },
+  "SDN": {
+   "name": "Sudan",
+   "expenditure_usd": {
+    "value": 375212619.388697,
+    "year": 2021
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.925377247984565,
+    "year": 2021
+   },
+   "personnel_total": {
+    "value": 144000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 115
+  },
+  "SEN": {
+   "name": "Senegal",
+   "expenditure_usd": {
+    "value": 514941285.308382,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.56647768181405,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 19000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 107
+  },
+  "SGP": {
+   "name": "Singapore",
+   "expenditure_usd": {
+    "value": 15061025802.2031,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.8417655746547,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 59000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 26
+  },
+  "SLB": {
+   "name": "Solomon Islands"
+  },
+  "SLE": {
+   "name": "Sierra Leone",
+   "expenditure_usd": {
+    "value": 36447048.8625476,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.462539633893509,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 9000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 152
+  },
+  "SLV": {
+   "name": "El Salvador",
+   "expenditure_usd": {
+    "value": 425200000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.18611916982816,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 42000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 112
+  },
+  "SMR": {
+   "name": "San Marino"
+  },
+  "SOM": {
+   "name": "Somalia, Fed. Rep.",
+   "expenditure_usd": {
+    "value": 201854000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.58578050121769,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 14000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 127
+  },
+  "SRB": {
+   "name": "Serbia",
+   "expenditure_usd": {
+    "value": 2322830101.6066,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.59513983105714,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 32000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 65
+  },
+  "SSD": {
+   "name": "South Sudan",
+   "expenditure_usd": {
+    "value": 2027890373.09995,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.9617070809135,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 53000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 66
+  },
+  "STP": {
+   "name": "Sao Tome and Principe",
+   "personnel_total": {
+    "value": 1000,
+    "year": 1999
+   }
+  },
+  "SUR": {
+   "name": "Suriname",
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   }
+  },
+  "SVK": {
+   "name": "Slovak Republic",
+   "expenditure_usd": {
+    "value": 2849224738.28021,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.01078152849676,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 18000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 56
+  },
+  "SVN": {
+   "name": "Slovenia",
+   "expenditure_usd": {
+    "value": 951904999.881012,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.31001116486788,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 7000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 87
+  },
+  "SWE": {
+   "name": "Sweden",
+   "expenditure_usd": {
+    "value": 12040289402.7522,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.99771738810168,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 15000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 27
+  },
+  "SWZ": {
+   "name": "Eswatini",
+   "expenditure_usd": {
+    "value": 79655264.6081486,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.4440675502379,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 3000,
+    "year": 1999
+   },
+   "rank_by_expenditure": 148
+  },
+  "SXM": {
+   "name": "Sint Maarten (Dutch part)"
+  },
+  "SYC": {
+   "name": "Seychelles",
+   "expenditure_usd": {
+    "value": 26860869.6918082,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.17906851761683,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 0,
+    "year": 2020
+   },
+   "rank_by_expenditure": 157
+  },
+  "SYR": {
+   "name": "Syrian Arab Republic",
+   "expenditure_usd": {
+    "value": 2494887483.1484,
+    "year": 2011
+   },
+   "expenditure_gdp_pct": {
+    "value": 4.05614173609585,
+    "year": 2010
+   },
+   "personnel_total": {
+    "value": 269000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 62
+  },
+  "TCA": {
+   "name": "Turks and Caicos Islands"
+  },
+  "TCD": {
+   "name": "Chad",
+   "expenditure_usd": {
+    "value": 557711240.140698,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.98484990097129,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 45000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 104
+  },
+  "TGO": {
+   "name": "Togo",
+   "expenditure_usd": {
+    "value": 195347349.222552,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.99877193389434,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 10000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 129
+  },
+  "THA": {
+   "name": "Thailand",
+   "expenditure_usd": {
+    "value": 5522411647.48004,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.07876078016919,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 455000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 43
+  },
+  "TJK": {
+   "name": "Tajikistan",
+   "expenditure_usd": {
+    "value": 246393473.020582,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.84774975839365,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 17000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 124
+  },
+  "TKM": {
+   "name": "Turkmenistan",
+   "expenditure_usd": {
+    "value": 111923076.923077,
+    "year": 1999
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.90187475069805,
+    "year": 1999
+   },
+   "personnel_total": {
+    "value": 57000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 142
+  },
+  "TLS": {
+   "name": "Timor-Leste",
+   "expenditure_usd": {
+    "value": 46400000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.66415662650602,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 2000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 151
+  },
+  "TON": {
+   "name": "Tonga"
+  },
+  "TTO": {
+   "name": "Trinidad and Tobago",
+   "expenditure_usd": {
+    "value": 234544782.155796,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.921416388185832,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 5000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 125
+  },
+  "TUN": {
+   "name": "Tunisia",
+   "expenditure_usd": {
+    "value": 1313683263.15451,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.50636792573464,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 48000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 80
+  },
+  "TUR": {
+   "name": "Turkiye",
+   "expenditure_usd": {
+    "value": 24978735534.6038,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.92255231276371,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 512000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 17
+  },
+  "TUV": {
+   "name": "Tuvalu"
+  },
+  "TZA": {
+   "name": "Tanzania",
+   "expenditure_usd": {
+    "value": 920849885.868755,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.154617473534,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 28000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 91
+  },
+  "UGA": {
+   "name": "Uganda",
+   "expenditure_usd": {
+    "value": 1116761828.70832,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.88159798311992,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 46000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 84
+  },
+  "UKR": {
+   "name": "Ukraine",
+   "expenditure_usd": {
+    "value": 64704990025.4782,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 34.4815297701892,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 298000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 8
+  },
+  "URY": {
+   "name": "Uruguay",
+   "expenditure_usd": {
+    "value": 1736764487.451,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.31053827798919,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 22000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 67
+  },
+  "USA": {
+   "name": "United States",
+   "expenditure_usd": {
+    "value": 997309000000,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.41921653228044,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 1395000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 1
+  },
+  "UZB": {
+   "name": "Uzbekistan",
+   "expenditure_usd": {
+    "value": 1440385072.20752,
+    "year": 2018
+   },
+   "expenditure_gdp_pct": {
+    "value": 2.86661981035524,
+    "year": 2018
+   },
+   "personnel_total": {
+    "value": 68000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 74
+  },
+  "VCT": {
+   "name": "St. Vincent and the Grenadines"
+  },
+  "VEN": {
+   "name": "Venezuela, RB",
+   "expenditure_usd": {
+    "value": 0,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.500704497643446,
+    "year": 2023
+   },
+   "personnel_total": {
+    "value": 343000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 167
+  },
+  "VGB": {
+   "name": "British Virgin Islands"
+  },
+  "VIR": {
+   "name": "Virgin Islands (U.S.)"
+  },
+  "VNM": {
+   "name": "Viet Nam",
+   "expenditure_usd": {
+    "value": 5500000000,
+    "year": 2018
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.80650138874311,
+    "year": 2018
+   },
+   "personnel_total": {
+    "value": 522000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 45
+  },
+  "VUT": {
+   "name": "Vanuatu"
+  },
+  "WSM": {
+   "name": "Samoa"
+  },
+  "XKX": {
+   "name": "Kosovo",
+   "expenditure_usd": {
+    "value": 165554668.553169,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.47659639574127,
+    "year": 2024
+   },
+   "rank_by_expenditure": 135
+  },
+  "YEM": {
+   "name": "Yemen, Rep.",
+   "expenditure_usd": {
+    "value": 1714830843.68747,
+    "year": 2014
+   },
+   "expenditure_gdp_pct": {
+    "value": 3.96689083277903,
+    "year": 2014
+   },
+   "personnel_total": {
+    "value": 40000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 68
+  },
+  "ZAF": {
+   "name": "South Africa",
+   "expenditure_usd": {
+    "value": 2835956043.23652,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.700150834276412,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 89000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 57
+  },
+  "ZMB": {
+   "name": "Zambia",
+   "expenditure_usd": {
+    "value": 349668209.787907,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 1.33268361976463,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 16000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 118
+  },
+  "ZWE": {
+   "name": "Zimbabwe",
+   "expenditure_usd": {
+    "value": 98394292.7162675,
+    "year": 2024
+   },
+   "expenditure_gdp_pct": {
+    "value": 0.351195023855751,
+    "year": 2024
+   },
+   "personnel_total": {
+    "value": 51000,
+    "year": 2020
+   },
+   "rank_by_expenditure": 146
+  }
+ }
+}

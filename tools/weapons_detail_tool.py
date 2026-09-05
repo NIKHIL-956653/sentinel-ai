@@ -1,40 +1,18 @@
-import requests
-import os
-import json
-from dotenv import load_dotenv
+"""Weapon category details per country — LLM-generated, cached in MongoDB."""
+from database import weapons_collection, cache_get, cache_put
+from tools.llm import chat_json, LLMError
+from tools.grounding import ground_items
 
-load_dotenv()
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-
-try:
-    from database import get_db
-    db = get_db()
-    weapons_cache = db["weapons_detail_cache"]
-    MONGO_AVAILABLE = True
-except:
-    MONGO_AVAILABLE = False
-    local_cache = {}
 
 def get_weapon_category_details(country: str, category: str) -> list:
     """
-    Get detailed info for any weapon category
-    for any country using LLM + MongoDB cache!
-    
-    Categories: submarines, missiles, fighter_jets, 
-                warships, tanks, special_forces
+    Categories: submarines, missiles, fighter_jets, warships, tanks
     """
-    cache_key = f"{country}_{category}"
-
-    # Check MongoDB cache
-    if MONGO_AVAILABLE:
-        cached = weapons_cache.find_one({"key": cache_key})
-        if cached:
-            print(f"Cache hit: {cache_key}")
-            return cached["data"]
-    else:
-        if cache_key in local_cache:
-            return local_cache[cache_key]
+    cache_key = f"{country.strip().lower()}_{category}_v2"  # v2 = grounded items
+    cached = cache_get(weapons_collection, cache_key)
+    if cached is not None:
+        print(f"⚡ Cache hit: {cache_key}")
+        return cached
 
     # Category specific prompts
     prompts = {
@@ -50,7 +28,7 @@ Return as JSON array:
 [{{"name": "...", "class": "...", "year": "...", 
    "role": "...", "patrol_areas": "...", 
    "history": "..."}}]
-Max 8 submarines. Return ONLY JSON.""",
+Max 8 submarines. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""",
 
         "missiles": f"""List the officially declared missiles of {country}.
 For each missile provide:
@@ -63,7 +41,7 @@ For each missile provide:
 Return as JSON array:
 [{{"name": "...", "type": "...", "range": "...",
    "year": "...", "history": "..."}}]
-Max 8 missiles. Return ONLY JSON.""",
+Max 8 missiles. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""",
 
         "fighter_jets": f"""List the active fighter jets of {country}.
 For each jet provide:
@@ -75,7 +53,7 @@ For each jet provide:
 Return as JSON array:
 [{{"name": "...", "variant": "...", "year": "...",
    "role": "...", "history": "..."}}]
-Max 8 jets. Return ONLY JSON.""",
+Max 8 jets. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""",
 
         "warships": f"""List the major warships of {country}.
 For each warship provide:
@@ -88,7 +66,7 @@ For each warship provide:
 Return as JSON array:
 [{{"name": "...", "class": "...", "year": "...",
    "patrol_areas": "...", "history": "..."}}]
-Max 8 warships. Return ONLY JSON.""",
+Max 8 warships. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""",
 
         "tanks": f"""List the main battle tanks of {country}.
 For each tank provide:
@@ -100,59 +78,22 @@ For each tank provide:
 Return as JSON array:
 [{{"name": "...", "year": "...", 
    "features": "...", "history": "..."}}]
-Max 8 tanks. Return ONLY JSON.""",
+Max 8 tanks. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""",
     }
 
     prompt = prompts.get(category, f"""
 List key {category} of {country} military.
-Return as JSON array with name, year, description fields.
-Max 8 items. Return ONLY JSON.""")
+Return as JSON array with name, year, description, wiki_title fields.
+Max 8 items. wiki_title must be the exact title of the English Wikipedia article about that item (or null if none). Return ONLY JSON.""")
 
     try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "google/gemini-2.0-flash-lite-001",
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ],
-                "max_tokens": 1000
-            }
-        )
-
-        content = response.json()["choices"][0]["message"]["content"]
-
-        # Clean JSON
-        content = content.strip()
-        if "```" in content:
-            parts = content.split("```")
-            for part in parts:
-                if "[" in part:
-                    content = part
-                    if content.startswith("json"):
-                        content = content[4:]
-                    break
-
-        data = json.loads(content.strip())
-
-        # Cache result
-        if MONGO_AVAILABLE:
-            weapons_cache.insert_one({
-                "key": cache_key,
-                "country": country,
-                "category": category,
-                "data": data
-            })
-        else:
-            local_cache[cache_key] = data
-
+        data = chat_json(prompt, max_tokens=1200)
+        if not isinstance(data, list):
+            raise LLMError("expected a JSON array")
+        data = ground_items(data)   # verify wiki_title → source_url / grounded flag
+        cache_put(weapons_collection, cache_key, data, country=country, category=category)
         return data
-
-    except Exception as e:
-        print(f"Error: {e}")
+    except LLMError as e:
+        print(f"❌ Weapons generation failed ({cache_key}): {e}")
         return [{"name": "Data unavailable",
                  "history": "Could not fetch details"}]

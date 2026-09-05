@@ -1,6 +1,5 @@
 import requests
-import json
-from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
+from tools.llm import chat_json, LLMError
 
 def get_country_military_profile(country: str) -> dict:
     """
@@ -63,50 +62,18 @@ def get_country_military_profile(country: str) -> dict:
         else:
             profile = get_basic_profile(country)
 
-        # Add GFP real numbers!
-        from tools.global_firepower import get_country_firepower
-
-        country_url_map = {
-            "uae": "united-arab-emirates",
-            "united arab emirates": "united-arab-emirates",
-            "usa": "united-states",
-            "united states": "united-states",
-            "uk": "united-kingdom",
-            "united kingdom": "united-kingdom",
-            "north korea": "north-korea",
-            "south korea": "south-korea",
-            "saudi arabia": "saudi-arabia",
-        }
-
-        country_key = country.lower().strip()
-        print(f"🔑 Country key: '{country_key}'")
-        gfp_url = country_url_map.get(
-            country_key,
-            country.lower().strip().replace(" ", "-")
-        )
-        print(f"🔍 GFP URL being used: {gfp_url}")
-        gfp_data = get_country_firepower(gfp_url)
-
-        if gfp_data:
-            profile["army_strength"] = gfp_data.get(
-                "Army Personnel*", {}).get("value", "N/A")
-            profile["navy_strength"] = gfp_data.get(
-                "Navy Personnel*", {}).get("value", "N/A")
-            profile["airforce_strength"] = gfp_data.get(
-                "Air Force Personnel*", {}).get("value", "N/A")
-            profile["defense_budget"] = gfp_data.get(
-                "Defense Budget", {}).get("value", "N/A")
-            profile["active_personnel"] = gfp_data.get(
-                "Active Personnel", {}).get("value", "N/A")
-            profile["fighters"] = gfp_data.get(
-                "Fighters", {}).get("value", "N/A")
-            profile["tanks"] = gfp_data.get(
-                "Tanks", {}).get("value", "N/A")
-            profile["submarines"] = gfp_data.get(
-                "Submarines", {}).get("value", "N/A")
-            profile["aircraft_carriers"] = gfp_data.get(
-                "Aircraft Carriers", {}).get("value", "N/A")
-            profile["data_source"] = "Wikipedia + Global Firepower"
+        # Merge openly licensed statistics (World Bank / SIPRI / IISS) — see tools/military_data.py
+        from tools.military_data import get_stats, provenance
+        stats = get_stats(country)
+        if stats:
+            profile.update({k: v for k, v in stats.items() if k not in ("iso3", "wb_name")})
+            profile["data_source"] = "Wikipedia (summary) + World Bank open data (SIPRI/IISS)"
+            profile["data_provenance"] = provenance()
+        else:
+            profile["data_source"] = "Wikipedia (summary) — open statistics unavailable"
+            profile["data_provenance"] = provenance()
+        # Branch strengths come from the LLM's reading of the Wikipedia summary → label them as such
+        profile["estimates_note"] = "Army / Navy / Air Force figures are estimates extracted from the Wikipedia summary; budget, personnel and rank are World Bank data with year."
 
         return profile
         
@@ -144,53 +111,17 @@ Extract and return ONLY a JSON object:
 If data not available for a field use "Officially Not Available"
 Return ONLY the JSON, no other text."""
 
-    print(f"🤖 Calling OpenRouter...")
-    print(f"📝 Summary length: {len(raw_data)}")
-
     try:
-        response = requests.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "openai/gpt-oss-120b",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                "max_tokens": 1000
-            }
-        )
-        print(f"📡 OpenRouter status: {response.status_code}")
-        print(f"📡 Response: {response.text[:200]}")
-
-        if response.status_code == 200:
-            data = response.json()
-            content = data['choices'][0]['message']['content']
-            print(f"🤖 LLM Raw Response: {content[:300]}")
-
-            content = content.strip()
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            
-            profile = json.loads(content.strip())
-            profile["data_source"] = "Wikipedia"
-            profile["source_url"] = source_url
-            print(f"✅ Profile structured for {country}!")
-            return profile
-            
-    except Exception as e:
+        profile = chat_json(prompt, max_tokens=1000)
+        if not isinstance(profile, dict):
+            raise LLMError("expected a JSON object")
+        profile["data_source"] = "Wikipedia"
+        profile["source_url"] = source_url
+        print(f"✅ Profile structured for {country}")
+        return profile
+    except LLMError as e:
         print(f"❌ LLM error: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    return get_basic_profile(country)
+        return get_basic_profile(country)
 
 
 def get_basic_profile(country: str) -> dict:

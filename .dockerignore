@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+legacy/
+_to_delete/
+tests/
+eval/results.json
+*.log
+.vscode/
+.idea/

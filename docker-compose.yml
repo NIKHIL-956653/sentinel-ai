@@ -1,0 +1,29 @@
+# Local full stack: API (+ frontend at http://localhost:8000/app) and MongoDB.
+#   docker compose up --build
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env                       # TAVILY_API_KEY, OPENROUTER_API_KEY, optional SENTINEL_API_KEY …
+    environment:
+      MONGODB_URI: mongodb://mongo:27017   # overrides .env inside the compose network
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

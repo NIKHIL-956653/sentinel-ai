@@ -104,6 +104,9 @@ check("No duplicate JS functions", len(dupes) == 0,
 print(f"\n{CYAN}--- 3. HTML ↔ JS ID MATCHING ---{RESET}")
 
 html_ids = set(re.findall(r'id="([^"]+)"', html))
+# ids the JS creates itself (modals, detail panes) count as present
+html_ids |= set(re.findall(r'id="([^"]+)"', js))
+html_ids |= set(re.findall(r'\.id\s*=\s*["\']([^"\']+)["\']', js))
 js_ids = set(re.findall(r'getElementById\(["\']([^"\']+)["\']\)', js))
 
 missing_ids = js_ids - html_ids
@@ -160,10 +163,15 @@ for module, func in tool_imports:
     else:
         check(f"tools/{module}.py exists", False, "FILE MISSING!")
 
-# load_dotenv check in country.py
-check("country.py loads dotenv for API keys",
-      "load_dotenv" in country_py,
-      "Missing load_dotenv — API keys won't load!")
+# .env is loaded once, centrally, in config.py
+check("config.py loads dotenv for API keys",
+      "load_dotenv" in read("config.py"),
+      "Missing load_dotenv in config.py — API keys won't load!")
+check("No direct OpenRouter calls outside tools/llm.py",
+      not any("openrouter.ai" in read(os.path.join(d, f))
+              for d in ("tools", "api/routes", "agents") if os.path.isdir(d)
+              for f in os.listdir(d) if f.endswith(".py") and f != "llm.py"),
+      "Some module bypasses tools/llm.py")
 
 # ──────────────────────────────────────────────
 # 7. ENV CHECK

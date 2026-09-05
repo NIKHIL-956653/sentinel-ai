@@ -1,71 +1,24 @@
 from fastapi import APIRouter, HTTPException
 from api.models.news_model import NewsRequest, NewsResponse
-from agents.collector_agent import CollectorAgent
-from agents.verifier_agent import VerifierAgent
-from database import save_news_results, get_cached_results
+from database import mongo_available
+from config import NEWS_CACHE_HOURS
+from services.news_service import run_news_query, NoArticles
 
 router = APIRouter()
-
-collector = CollectorAgent()
-verifier = VerifierAgent()
 
 @router.post("/news", response_model=NewsResponse)
 async def get_news(request: NewsRequest):
     try:
         print(f"\n🌐 API Request: {request.query}")
-        
-        # Step 1: Check cache first!
-        cached = get_cached_results(
-            request.query, 
-            hours=1
-        )
-        
-        if cached:
-            print("⚡ Serving from cache!")
-            return NewsResponse(
-                status="cached",
-                query=cached["query"],
-                total_articles=cached["total_articles"],
-                total_stories=cached["total_stories"],
-                contradictions=cached["contradictions"],
-                results=cached["results"]
-            )
-        
-        # Step 2: Fresh fetch!
-        collected = collector.collect(request.query)
-        
-        if collected["status"] == "failed":
-            raise HTTPException(
-                status_code=404,
-                detail="No articles found!"
-            )
-        
-        # Step 3: Verify
-        verified = verifier.verify(collected)
-        
-        # Step 4: Save to MongoDB!
-        save_data = {
-            "total_articles": collected["total_articles"],
-            "total_stories": verified["total_stories"],
-            "results": verified["results"],
-            "contradictions": verified["contradictions"]
-        }
-        save_news_results(request.query, save_data)
-        
-        return NewsResponse(
-            status=verified["status"],
-            query=verified["query"],
-            total_articles=collected["total_articles"],
-            total_stories=verified["total_stories"],
-            contradictions=verified["contradictions"],
-            results=verified["results"]
-        )
-        
+        result = run_news_query(request.query, cache_hours=NEWS_CACHE_HOURS)
+        return NewsResponse(**{k: v for k, v in result.items() if k != "fresh"})
+    except NoArticles:
+        raise HTTPException(status_code=404, detail="No articles found!")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/health")
 async def health_check():
@@ -73,7 +26,7 @@ async def health_check():
         "status": "online",
         "service": "SENTINEL AI",
         "version": "2.0.0",
-        "database": "MongoDB connected ✅"
+        "database": "MongoDB connected ✅" if mongo_available() else "MongoDB unreachable ⚠️ (caching disabled)"
     }
 
 @router.get("/recent")
@@ -85,3 +38,48 @@ async def get_recent():
         "total": len(recent),
         "searches": recent
     }
+
+
+# ── Watchlist ───────────────────────────────────────────────────────────────
+from pydantic import BaseModel as _BM
+from services import watchlist as wl
+from tools import telegram
+
+
+class WatchRequest(_BM):
+    query: str
+
+
+@router.get("/watchlist")
+async def watchlist_list():
+    return {"watches": wl.list_watches(), "telegram_configured": telegram.configured(),
+            "interval_minutes": __import__("config").WATCHLIST_INTERVAL_MINUTES}
+
+
+@router.post("/watchlist")
+async def watchlist_add(req: WatchRequest):
+    try:
+        return wl.add_watch(req.query)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/watchlist")
+async def watchlist_remove(query: str):
+    if not wl.remove_watch(query):
+        raise HTTPException(status_code=404, detail="not on watchlist")
+    return {"status": "removed", "query": query}
+
+
+@router.post("/watchlist/run")
+async def watchlist_run():
+    """Run all watches now (also the hook for an external cron)."""
+    return wl.run_once()
+
+
+@router.post("/watchlist/test-alert")
+async def watchlist_test_alert():
+    ok = telegram.send_message("✅ SENTINEL AI connected — alerts will arrive here.")
+    if not ok:
+        raise HTTPException(status_code=503, detail="Telegram not configured or rejected the message")
+    return {"status": "sent"}

@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENTINEL 2.0 — OSINT Intelligence Platform</title>
+<meta name="description" content="Military intelligence & news verification from public sources. AI-scored confidence, source trust, contradiction detection.">
+<meta name="theme-color" content="#03060a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SENTINEL">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -62,9 +70,9 @@
       <div class="panel" style="margin-top:12px;">
         <div class="panel-title">// SYSTEM STATUS</div>
         <div class="stat-grid">
-          <div class="stat-box"><div class="stat-label">SOURCES</div><div class="stat-val cyan" id="srcCount">2847</div></div>
-          <div class="stat-box"><div class="stat-label">VERIFIED</div><div class="stat-val green">89%</div></div>
-          <div class="stat-box"><div class="stat-label">ALERTS</div><div class="stat-val red" id="alertCount">0</div></div>
+          <div class="stat-box"><div class="stat-label">SOURCES</div><div class="stat-val cyan" id="srcCount">—</div></div>
+          <div class="stat-box"><div class="stat-label">VERIFIED</div><div class="stat-val green" id="verifiedPct">—</div></div>
+          <div class="stat-box"><div class="stat-label">DISPUTED</div><div class="stat-val red" id="alertCount">0</div></div>
           <div class="stat-box"><div class="stat-label">STATUS</div><div class="stat-val amber">LIVE</div></div>
         </div>
       </div>
@@ -74,7 +82,15 @@
     <div class="war-center">
       <div class="panel" style="height:100%;">
         <div class="panel-title">// GLOBAL THREAT MAP — LIVE OSINT</div>
-        <div id="worldMap" style="height:380px; width:100%; border-radius:8px; border:1px solid #0d4a33; position:relative; z-index:1;"></div>
+        <div style="position:relative;">
+          <div id="worldMap" style="height:380px; width:100%; border-radius:8px; border:1px solid #0d4a33; position:relative; z-index:1;"></div>
+          <div id="mapEmpty" style="display:none; position:absolute; inset:0; z-index:2; align-items:center; justify-content:center; pointer-events:none;">
+            <div style="background:#06100ccc; border:1px dashed #0d4a33; padding:10px 16px; color:#3a7a5c; font-size:11px; letter-spacing:1px; text-align:center;">
+              NO LIVE INTEL PLOTTED YET<br><span style="color:#2a5a3c;">run a search in NEWS FEED — stories are geotagged and appear here</span>
+            </div>
+          </div>
+        </div>
+        <div style="color:#3a7a5c; font-size:10px; margin-top:6px;">Markers = stories from the last 24h of searches, placed by country. Colour = confidence. Click for headlines.</div>
       </div>
     </div>
 
@@ -104,8 +120,8 @@
       <div class="panel" style="margin-top:12px;">
         <div class="panel-title">// THREAT LEVEL</div>
         <div style="text-align:center; padding:10px;">
-          <div style="color:#ff4d6d; font-size:28px; font-weight:bold; text-shadow:0 0 20px #ff4d6d;">ELEVATED</div>
-          <div style="color:#3a7a5c; font-size:10px; letter-spacing:2px; margin-top:4px;">BASED ON OSINT ANALYSIS</div>
+          <div id="threatLevel" style="color:#ff4d6d; font-size:24px; font-weight:bold; text-shadow:0 0 20px #ff4d6d;">STANDBY</div>
+          <div style="color:#3a7a5c; font-size:10px; letter-spacing:2px; margin-top:4px;">REGIONS WITH ACTIVE STORIES (24H)</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
           <span style="width:50px; color:#ff4d6d; font-size:11px;">HIGH</span>
@@ -140,6 +156,16 @@
       <span class="prompt">></span>
       <input type="text" id="newsQuery" placeholder="Enter military/geopolitical query...">
       <button id="searchBtn" class="btn-primary">🔍 SEARCH INTEL</button>
+      <button id="watchBtn" class="btn-primary" style="background:#ffb300; color:#03060a;" title="Re-run this query on a schedule and alert on new high-confidence stories">🔔 WATCH</button>
+    </div>
+    <div id="watchPanel" class="panel" style="margin-bottom:12px; display:none;">
+      <div class="panel-title">// WATCHLIST <span id="watchMeta" style="color:#3a7a5c; font-weight:normal; font-size:10px; margin-left:8px;"></span></div>
+      <div id="watchList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+      <div style="margin-top:8px; display:flex; gap:8px;">
+        <button class="why-btn" onclick="runWatchlist()">RUN NOW</button>
+        <button class="why-btn" onclick="testAlert()">TEST TELEGRAM</button>
+        <span id="watchStatus" style="color:#3a7a5c; font-size:11px; align-self:center;"></span>
+      </div>
     </div>
     <div id="newsResults" class="results"></div>
   </section>
@@ -225,6 +251,23 @@
 
 </div>
 
+<script>
+  // Backend URL when the frontend is hosted separately (e.g. "https://sentinel-ai.onrender.com").
+  // Leave empty when served by FastAPI at /app or when opening the file locally.
+  window.SENTINEL_API_BASE = "";
+  // Must match SENTINEL_API_KEY on the backend when that is set. Visible to viewers — it is a
+  // speed bump against scripts, not user auth; rate limiting is the real protection.
+  window.SENTINEL_API_KEY = "";
+</script>
+<!-- When served by the FastAPI backend, this overrides the two values above from server env.
+     Opened as a file or hosted elsewhere it 404s harmlessly and the defaults stand. -->
+<script src="/app-config.js"></script>
 <script src="app.js"></script>
+<script>
+  // Installable PWA (Add to Home Screen). Only over http(s) — file:// has no service workers.
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+</script>
 </body>
 </html>

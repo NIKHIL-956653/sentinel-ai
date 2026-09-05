@@ -1,0 +1,31 @@
+# Render Blueprint — deploy with "New → Blueprint" pointing at this repo.
+# Free web service running the Dockerfile; API + frontend at https://<service>.onrender.com/app/
+services:
+  - type: web
+    name: sentinel-ai
+    runtime: docker
+    plan: free
+    region: frankfurt          # closest free region to Dubai
+    healthCheckPath: /api/v1/health
+    autoDeploy: true           # every push to main redeploys
+    envVars:
+      - key: TAVILY_API_KEY
+        sync: false            # set in the Render dashboard, never committed
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false            # MongoDB Atlas connection string
+      - key: SENTINEL_API_KEY
+        generateValue: true    # Render generates a random key; the frontend receives it via /app-config.js
+      - key: ALLOWED_ORIGINS
+        value: "*"             # frontend is same-origin (/app); tighten if you host it elsewhere
+      - key: PUBLIC_SITE_URL
+        value: ""              # e.g. https://sentinel-ai.onrender.com/app — used in Telegram alerts
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-oss-120b
+      - key: WATCHLIST_INTERVAL_MINUTES
+        value: "60"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
