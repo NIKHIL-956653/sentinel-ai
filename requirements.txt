@@ -8,3 +8,4 @@ requests==2.33.1
 tavily-python==0.7.23
 beautifulsoup4==4.14.3
 lxml==6.0.4
+redis==5.0.8          # optional: shared rate-limit window across instances (REDIS_URL)

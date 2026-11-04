@@ -5,11 +5,17 @@ Every tool used to carry its own copy of the OpenRouter request + JSON-fence
 stripping. That meant 7 hardcoded model names and 7 places to fix a bug.
 Now: chat() for text, chat_json() for structured output. Model comes from
 config.OPENROUTER_MODEL (env OPENROUTER_MODEL).
+
+Every call reports tokens / latency / cost to api.metrics (OpenRouter returns `usage`
+when asked; if it omits cost we estimate from configured per-token prices).
 """
 import json
+import time
+
 import requests
 
 from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_MODEL, LLM_TIMEOUT_SECONDS
+from api import metrics
 
 
 class LLMError(RuntimeError):
@@ -20,6 +26,7 @@ def chat(prompt: str, max_tokens: int = 1000, model: str | None = None) -> str:
     """Single-turn completion. Raises LLMError on any failure."""
     if not OPENROUTER_API_KEY:
         raise LLMError("OPENROUTER_API_KEY is not set (check .env)")
+    t0 = time.time()
     try:
         r = requests.post(
             f"{OPENROUTER_BASE_URL}/chat/completions",
@@ -27,17 +34,28 @@ def chat(prompt: str, max_tokens: int = 1000, model: str | None = None) -> str:
                      "Content-Type": "application/json"},
             json={"model": model or OPENROUTER_MODEL,
                   "messages": [{"role": "user", "content": prompt}],
-                  "max_tokens": max_tokens},
+                  "max_tokens": max_tokens,
+                  "usage": {"include": True}},
             timeout=LLM_TIMEOUT_SECONDS,
         )
     except requests.RequestException as e:
+        metrics.record_llm(seconds=time.time() - t0, ok=False)
         raise LLMError(f"OpenRouter request failed: {e}") from e
     if r.status_code != 200:
+        metrics.record_llm(seconds=time.time() - t0, ok=False)
         raise LLMError(f"OpenRouter {r.status_code}: {r.text[:200]}")
     try:
-        return r.json()["choices"][0]["message"]["content"]
+        body = r.json()
+        content = body["choices"][0]["message"]["content"]
     except (KeyError, IndexError, ValueError) as e:
+        metrics.record_llm(seconds=time.time() - t0, ok=False)
         raise LLMError(f"Unexpected OpenRouter response: {r.text[:200]}") from e
+    usage = body.get("usage") or {}
+    metrics.record_llm(prompt_tokens=usage.get("prompt_tokens", 0),
+                       completion_tokens=usage.get("completion_tokens", 0),
+                       seconds=time.time() - t0,
+                       cost=usage.get("cost") if isinstance(usage.get("cost"), (int, float)) else None)
+    return content
 
 
 def strip_fences(text: str) -> str:
