@@ -65,6 +65,21 @@ def main():
                 n += 1
         print(f"  {n} values")
 
+    # 15-year expenditure series for the dossier sparkline (one request, all countries)
+    print("Fetching MS.MIL.XPND.CD series (last 15 years)…")
+    data = get_json(f"{API}/country/all/indicator/MS.MIL.XPND.CD", {"mrv": 15})
+    rows = data[1] if len(data) > 1 and data[1] else []
+    n = 0
+    for row in rows:
+        iso3 = row.get("countryiso3code")
+        if iso3 in table and row.get("value") is not None:
+            table[iso3].setdefault("expenditure_series", []).append({"year": int(row["date"]), "value": row["value"]})
+            n += 1
+    for iso3 in table:
+        if "expenditure_series" in table[iso3]:
+            table[iso3]["expenditure_series"].sort(key=lambda p: p["year"])
+    print(f"  {n} yearly values")
+
     # Rank by most recent expenditure (transparent, reproducible — unlike proprietary power indexes)
     ranked = sorted((iso3 for iso3 in table if "expenditure_usd" in table[iso3]),
                     key=lambda i: table[i]["expenditure_usd"]["value"], reverse=True)

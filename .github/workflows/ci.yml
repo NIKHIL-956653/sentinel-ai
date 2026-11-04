@@ -27,8 +27,11 @@ jobs:
           cp .env.example .env
           python sentinel_checker.py
 
-      - name: Offline evaluation (clustering / verdict rule / keyword contradictions)
-        run: python eval/run_eval.py --offline
+      - name: Offline evaluation + regression gate (clustering F1 ≥ 0.8, verdict accuracy = 1.0)
+        run: python eval/run_eval.py --offline --min-clustering-f1 0.8 --min-verdict-acc 1.0
+
+      - name: Frontend syntax check
+        run: node --check frontend/app.js
 
       - name: Docker image builds
         run: docker build -t sentinel-ai:ci .

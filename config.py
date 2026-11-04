@@ -5,7 +5,7 @@ load_dotenv()
 
 # App Settings
 APP_NAME = "SENTINEL AI"
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.2.0"
 DEV_MODE = os.getenv("DEV_MODE", "true").lower() == "true"
 
 # API Keys
@@ -30,8 +30,28 @@ ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "30"))        # any endpoint, per IP
 EXPENSIVE_LIMIT_PER_MINUTE = int(os.getenv("EXPENSIVE_LIMIT_PER_MINUTE", "8"))  # endpoints that call Tavily/LLM
 
+# Optional Redis for the rate limiter (multi-instance deployments). Empty = in-memory window.
+REDIS_URL = os.getenv("REDIS_URL", "").strip()
+
+# Logging: "text" (default, human) or "json" (one JSON object per line — for Render/Datadog/Loki)
+LOG_FORMAT = os.getenv("LOG_FORMAT", "text").lower()
+
 # Contradiction detection: "llm" = one LLM judgement per search (falls back to keyword on failure), "keyword" = heuristic only
 CONTRADICTION_MODE = os.getenv("CONTRADICTION_MODE", "llm").lower()
+
+# Claim-level verification + entity extraction (one LLM call each per fresh search). Off = skip.
+CLAIMS_ENABLED = os.getenv("CLAIMS_ENABLED", "true").lower() == "true"
+ENTITIES_ENABLED = os.getenv("ENTITIES_ENABLED", "true").lower() == "true"
+
+# Daily intelligence brief (services/brief.py): cached for BRIEF_CACHE_HOURS, pushed to Telegram
+# every BRIEF_INTERVAL_HOURS when a bot is configured (0 = never push automatically).
+BRIEF_CACHE_HOURS = int(os.getenv("BRIEF_CACHE_HOURS", "6"))
+BRIEF_INTERVAL_HOURS = int(os.getenv("BRIEF_INTERVAL_HOURS", "24"))
+BRIEF_WINDOW_HOURS = int(os.getenv("BRIEF_WINDOW_HOURS", "24"))
+
+# Approximate USD per 1M tokens, used only when OpenRouter does not return a cost (shown as "est.")
+LLM_PRICE_IN_PER_M = float(os.getenv("LLM_PRICE_IN_PER_M", "0.15"))
+LLM_PRICE_OUT_PER_M = float(os.getenv("LLM_PRICE_OUT_PER_M", "0.60"))
 
 # Watchlist + Telegram alerts (services/watchlist.py, tools/telegram.py)
 WATCHLIST_ENABLED = os.getenv("WATCHLIST_ENABLED", "true").lower() == "true"

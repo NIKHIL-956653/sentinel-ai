@@ -6,9 +6,12 @@ Measures the verification pipeline against eval/dataset.json (synthetic, labelle
   2. Verdict rule      — accuracy of VerifierAgent.verdict_for
   3. Contradictions    — precision / recall / F1 for the keyword heuristic and (with a key) the LLM judge
 
+  4. Claims           — (with a key) does the claim extractor mark the gold-corroborated claim as corroborated?
+
 Usage:
   python eval/run_eval.py            # everything (LLM judge needs OPENROUTER_API_KEY)
   python eval/run_eval.py --offline  # skip the LLM judge (CI)
+  python eval/run_eval.py --offline --min-clustering-f1 0.8 --min-verdict-acc 1.0   # CI gate: exit 1 on regression
 Writes eval/results.json.
 """
 import argparse
@@ -99,9 +102,28 @@ def eval_contradictions(pairs, method):
             "avg_latency_s": round(sum(latencies) / len(latencies), 2), "errors": errors}
 
 
+# ── 4. claim corroboration (LLM) ─────────────────────────────────────────────
+def eval_claims(cases):
+    """Each case: stories + the index of one story whose main claim the others corroborate (or not)."""
+    from tools.claims import extract_claims
+    tp = fp = fn = tn = 0
+    for case in cases:
+        stories = [{"titles": [t], "articles": [], "sources": []} for t in case["stories"]]
+        extract_claims(stories)
+        got = any(c["status"] == "corroborated" for c in stories[case["target"]].get("claims") or [])
+        if got and case["corroborated"]: tp += 1
+        elif got and not case["corroborated"]: fp += 1
+        elif not got and case["corroborated"]: fn += 1
+        else: tn += 1
+    p, r, f = prf(tp, fp, fn)
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "precision": p, "recall": r, "f1": f}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true", help="skip the LLM contradiction judge")
+    ap.add_argument("--min-clustering-f1", type=float, default=None, help="exit 1 if clustering F1 is below this")
+    ap.add_argument("--min-verdict-acc", type=float, default=None, help="exit 1 if verdict accuracy is below this")
     args = ap.parse_args()
 
     data = json.load(open(os.path.join(HERE, "dataset.json"), encoding="utf-8"))
@@ -118,8 +140,14 @@ def main():
             results["contradictions"]["llm"]["model"] = OPENROUTER_MODEL
         except Exception as e:  # network / key problems must not kill the report
             results["contradictions"]["llm"] = {"error": str(e)[:200]}
+        try:
+            results["claims"] = eval_claims(data.get("claims", []))
+            results["claims"]["model"] = OPENROUTER_MODEL
+        except Exception as e:
+            results["claims"] = {"error": str(e)[:200]}
     else:
         results["contradictions"]["llm"] = {"skipped": "offline or no OPENROUTER_API_KEY"}
+        results["claims"] = {"skipped": "offline or no OPENROUTER_API_KEY"}
 
     out = os.path.join(HERE, "results.json")
     json.dump(results, open(out, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
@@ -134,7 +162,19 @@ def main():
         print(f"Contradiction/llm  P={l['precision']}  R={l['recall']}  F1={l['f1']}  ({l['model']}, {l['avg_latency_s']}s/pair)")
     else:
         print(f"Contradiction/llm  {l}")
+    cl = results.get("claims", {})
+    if "f1" in cl:
+        print(f"Claims/llm         P={cl['precision']}  R={cl['recall']}  F1={cl['f1']}  ({cl['model']})")
     print(f"→ {out}")
+
+    failed = []
+    if args.min_clustering_f1 is not None and c["f1"] < args.min_clustering_f1:
+        failed.append(f"clustering F1 {c['f1']} < {args.min_clustering_f1}")
+    if args.min_verdict_acc is not None and v["accuracy"] < args.min_verdict_acc:
+        failed.append(f"verdict accuracy {v['accuracy']} < {args.min_verdict_acc}")
+    if failed:
+        print("❌ EVAL REGRESSION: " + "; ".join(failed))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

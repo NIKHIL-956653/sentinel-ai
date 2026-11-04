@@ -23,6 +23,7 @@ class NewsResponse(BaseModel):
     total_stories: int
     contradictions: List[dict]
     results: List[dict]
+    claim_summary: Optional[dict] = None
 
 class NewsRequest(BaseModel):
     query: str

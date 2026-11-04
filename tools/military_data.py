@@ -111,4 +111,30 @@ def get_stats(country: str):
     if "rank_by_expenditure" in row:
         out["global_rank"] = row["rank_by_expenditure"]
         out["global_rank_basis"] = "military expenditure (World Bank/SIPRI)"
+    series = get_series(country)
+    if series:
+        out["expenditure_series"] = series
     return out
+
+
+def get_series(country: str, key: str = "expenditure_series") -> list:
+    """
+    Year-by-year values ([{year, value}], oldest first) when the dataset carries a series
+    (scripts/fetch_open_data.py writes the last 15 years). Empty list when absent — the UI then
+    simply shows no sparkline.
+    """
+    d = _load()
+    iso3 = iso3_for(country)
+    if not d or not iso3:
+        return []
+    row = d["countries"].get(iso3) or {}
+    series = row.get(key)
+    if not isinstance(series, list):
+        return []
+    clean = []
+    for pt in series:
+        try:
+            clean.append({"year": int(pt["year"]), "value": float(pt["value"])})
+        except (KeyError, TypeError, ValueError):
+            continue
+    return sorted(clean, key=lambda p: p["year"])

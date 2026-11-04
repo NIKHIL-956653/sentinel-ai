@@ -1,7 +1,12 @@
+import asyncio
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from tools.wikipedia_tool import get_country_military_profile
 from tools.llm import chat, LLMError
+from tools.military_data import get_series
+from tools.report import country_markdown
 from database import get_cached_country, save_country_profile
 
 router = APIRouter()
@@ -10,24 +15,50 @@ router = APIRouter()
 _mem_cache = {}
 
 
+def _with_series(profile: dict) -> dict:
+    """Profiles cached before the dataset carried a series get it attached at read time."""
+    if profile and "expenditure_series" not in profile:
+        series = get_series(profile.get("country", ""))
+        if series:
+            profile["expenditure_series"] = series
+    return profile
+
+
+def _load_profile(country_name: str) -> dict:
+    if country_name in _mem_cache:
+        return _with_series(_mem_cache[country_name])
+    cached = get_cached_country(country_name)
+    if cached:
+        _mem_cache[country_name] = cached
+        return _with_series(cached)
+    profile = get_country_military_profile(country_name)
+    # global_rank comes from the open dataset (rank by expenditure) when available;
+    # otherwise whatever the Wikipedia/LLM step produced, else N/A
+    profile.setdefault("global_rank", "N/A")
+    _mem_cache[country_name] = profile
+    save_country_profile(country_name, profile)
+    return _with_series(profile)
+
+
 @router.get("/country/{country_name}")
 async def get_country(country_name: str):
     try:
-        if country_name in _mem_cache:
-            return _mem_cache[country_name]
-        cached = get_cached_country(country_name)
-        if cached:
-            _mem_cache[country_name] = cached
-            return cached
-        profile = get_country_military_profile(country_name)
-        # global_rank comes from the open dataset (rank by expenditure) when available;
-        # otherwise whatever the Wikipedia/LLM step produced, else N/A
-        profile.setdefault("global_rank", "N/A")
-        _mem_cache[country_name] = profile
-        save_country_profile(country_name, profile)
-        return profile
+        return await asyncio.to_thread(_load_profile, country_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/export/country/{country_name}")
+async def export_country(country_name: str, format: str = "md"):
+    try:
+        profile = await asyncio.to_thread(_load_profile, country_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if format == "json":
+        return profile
+    fname = "".join(ch if ch.isalnum() else "-" for ch in country_name.lower())
+    return PlainTextResponse(country_markdown(profile), media_type="text/markdown; charset=utf-8",
+                             headers={"Content-Disposition": f'attachment; filename="sentinel-dossier-{fname}.md"'})
 
 @router.get("/weapons/{country_name}/{category}")
 async def get_weapons(country_name: str, category: str):

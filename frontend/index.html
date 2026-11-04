@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENTINEL 2.0 — OSINT Intelligence Platform</title>
-<meta name="description" content="Military intelligence & news verification from public sources. AI-scored confidence, source trust, contradiction detection.">
+<title>SENTINEL 2.2 — OSINT Intelligence Platform</title>
+<meta name="description" content="Military intelligence & news verification from public sources. AI-scored confidence, source trust, claim-level corroboration, contradiction detection.">
 <meta name="theme-color" content="#03060a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -12,6 +12,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SENTINEL">
+<script>
+  // Theme before first paint (avoids a flash). Stored per device; default dark.
+  try { var t = localStorage.getItem("sentinel-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -22,7 +26,7 @@
 <div id="bootScreen" class="boot-screen">
   <canvas id="bootRain"></canvas>
   <div class="boot-content">
-    <div class="boot-logo">SENTINEL <span class="cyan">2.0</span></div>
+    <div class="boot-logo">SENTINEL <span class="cyan">2.2</span></div>
     <div class="boot-sub">OPEN SOURCE INTELLIGENCE PLATFORM</div>
     <div id="bootLog" class="boot-log"></div>
   </div>
@@ -37,10 +41,15 @@
   <!-- HEADER -->
   <header class="header">
     <div class="header-left">
-      <div class="logo">SENTINEL <span class="cyan">2.0</span></div>
+      <div class="logo">SENTINEL <span class="cyan">2.2</span></div>
       <div class="tagline">OPEN SOURCE INTELLIGENCE // NEWS VERIFICATION</div>
     </div>
     <div class="header-right">
+      <div class="header-tools">
+        <button id="paletteBtn" class="icon-btn" title="Command palette (Ctrl+K)">⌘ K</button>
+        <button id="themeBtn" class="icon-btn" title="Toggle light / dark theme">◐</button>
+        <button id="motionBtn" class="icon-btn" title="Toggle animations (rain / radar / ticker)">◴</button>
+      </div>
       <div id="clock" class="clock">--:--:--</div>
       <div class="status"><span class="dot"></span> SYSTEM ONLINE</div>
     </div>
@@ -50,6 +59,8 @@
   <nav class="nav">
     <button class="nav-btn active" data-screen="home">🌍 THREAT GRID</button>
     <button class="nav-btn" data-screen="news">📰 NEWS FEED</button>
+    <button class="nav-btn" data-screen="brief">🗞️ BRIEF</button>
+    <button class="nav-btn" data-screen="graph">🕸️ GRAPH</button>
     <button class="nav-btn" data-screen="countries">🗂️ COUNTRIES</button>
     <button class="nav-btn" data-screen="leaders">👤 LEADERS</button>
     <button class="nav-btn" data-screen="compare">⚔️ COMPARE</button>
@@ -75,6 +86,13 @@
           <div class="stat-box"><div class="stat-label">DISPUTED</div><div class="stat-val red" id="alertCount">0</div></div>
           <div class="stat-box"><div class="stat-label">STATUS</div><div class="stat-val amber">LIVE</div></div>
         </div>
+        <div class="stat-grid" style="margin-top:8px;">
+          <div class="stat-box"><div class="stat-label">LLM CALLS</div><div class="stat-val cyan" style="font-size:18px;" id="llmCalls">—</div></div>
+          <div class="stat-box"><div class="stat-label">TOKENS</div><div class="stat-val green" style="font-size:18px;" id="llmTokens">—</div></div>
+          <div class="stat-box"><div class="stat-label">LLM COST</div><div class="stat-val amber" style="font-size:18px;" id="llmCost">—</div></div>
+          <div class="stat-box"><div class="stat-label">CACHE HIT</div><div class="stat-val cyan" style="font-size:18px;" id="cacheHit">—</div></div>
+        </div>
+        <div id="statsNote" class="muted" style="font-size:10px; margin-top:6px;"></div>
       </div>
     </div>
 
@@ -83,14 +101,14 @@
       <div class="panel" style="height:100%;">
         <div class="panel-title">// GLOBAL THREAT MAP — LIVE OSINT</div>
         <div style="position:relative;">
-          <div id="worldMap" style="height:380px; width:100%; border-radius:8px; border:1px solid #0d4a33; position:relative; z-index:1;"></div>
-          <div id="mapEmpty" style="display:none; position:absolute; inset:0; z-index:2; align-items:center; justify-content:center; pointer-events:none;">
-            <div style="background:#06100ccc; border:1px dashed #0d4a33; padding:10px 16px; color:#3a7a5c; font-size:11px; letter-spacing:1px; text-align:center;">
-              NO LIVE INTEL PLOTTED YET<br><span style="color:#2a5a3c;">run a search in NEWS FEED — stories are geotagged and appear here</span>
+          <div id="worldMap" class="map-box" style="height:380px;"></div>
+          <div id="mapEmpty" class="map-empty" style="display:none;">
+            <div class="map-empty-box">
+              NO LIVE INTEL PLOTTED YET<br><span class="dim">run a search in NEWS FEED — stories are geotagged and appear here</span>
             </div>
           </div>
         </div>
-        <div style="color:#3a7a5c; font-size:10px; margin-top:6px;">Markers = stories from the last 24h of searches, placed by country. Colour = confidence. Click for headlines.</div>
+        <div class="muted" style="font-size:10px; margin-top:6px;">Markers = stories from the last 24h of searches, placed by country. Colour = confidence. Click for headlines.</div>
       </div>
     </div>
 
@@ -100,50 +118,32 @@
         <div class="panel-title">// TACTICAL RADAR</div>
         <div style="position:relative; width:180px; height:180px; margin:0 auto;">
           <svg viewBox="0 0 180 180" style="position:absolute; top:0; left:0; width:180px; height:180px;">
-            <circle cx="90" cy="90" r="85" fill="none" stroke="#0d4a33" stroke-width="1"/>
-            <circle cx="90" cy="90" r="60" fill="none" stroke="#0d4a33" stroke-width="1"/>
-            <circle cx="90" cy="90" r="35" fill="none" stroke="#0d4a33" stroke-width="1"/>
-            <line x1="90" y1="5" x2="90" y2="175" stroke="#0d4a33" stroke-width="0.5"/>
-            <line x1="5" y1="90" x2="175" y2="90" stroke="#0d4a33" stroke-width="0.5"/>
-            <line x1="30" y1="30" x2="150" y2="150" stroke="#0d4a33" stroke-width="0.5"/>
-            <line x1="150" y1="30" x2="30" y2="150" stroke="#0d4a33" stroke-width="0.5"/>
+            <circle cx="90" cy="90" r="85" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <circle cx="90" cy="90" r="60" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <circle cx="90" cy="90" r="35" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <line x1="90" y1="5" x2="90" y2="175" stroke="var(--border)" stroke-width="0.5"/>
+            <line x1="5" y1="90" x2="175" y2="90" stroke="var(--border)" stroke-width="0.5"/>
+            <line x1="30" y1="30" x2="150" y2="150" stroke="var(--border)" stroke-width="0.5"/>
+            <line x1="150" y1="30" x2="30" y2="150" stroke="var(--border)" stroke-width="0.5"/>
             <circle cx="130" cy="60" r="4" fill="#ff4d6d"><animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite"/></circle>
             <circle cx="60" cy="120" r="4" fill="#ffb300"><animate attributeName="opacity" values="1;0;1" dur="2.4s" repeatCount="indefinite"/></circle>
             <circle cx="110" cy="110" r="4" fill="#00ff9c"><animate attributeName="opacity" values="1;0;1" dur="3s" repeatCount="indefinite"/></circle>
             <circle cx="45" cy="55" r="3" fill="#ff4d6d"><animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/></circle>
           </svg>
-          <div id="radarSweep" style="position:absolute; top:0; left:0; width:180px; height:180px; border-radius:50%; background:conic-gradient(from 0deg, transparent 0deg, transparent 300deg, #00ff9c22 350deg, #00ff9c55 360deg);"></div>
+          <div id="radarSweep" class="radar-sweep"></div>
         </div>
-        <div style="text-align:center; margin-top:8px; font-size:10px; color:#3a7a5c; letter-spacing:2px;">SWEEP: ACTIVE</div>
+        <div class="muted" style="text-align:center; margin-top:8px; font-size:10px; letter-spacing:2px;">SWEEP: ACTIVE</div>
       </div>
 
       <div class="panel" style="margin-top:12px;">
         <div class="panel-title">// THREAT LEVEL</div>
         <div style="text-align:center; padding:10px;">
-          <div id="threatLevel" style="color:#ff4d6d; font-size:24px; font-weight:bold; text-shadow:0 0 20px #ff4d6d;">STANDBY</div>
-          <div style="color:#3a7a5c; font-size:10px; letter-spacing:2px; margin-top:4px;">REGIONS WITH ACTIVE STORIES (24H)</div>
+          <div id="threatLevel" class="threat-level">STANDBY</div>
+          <div class="muted" style="font-size:10px; letter-spacing:2px; margin-top:4px;">REGIONS WITH ACTIVE STORIES (24H)</div>
         </div>
-        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
-          <span style="width:50px; color:#ff4d6d; font-size:11px;">HIGH</span>
-          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
-            <div id="highBar" style="width:0%; height:100%; background:#ff4d6d; border-radius:3px; transition:width 1s;"></div>
-          </div>
-          <span id="highNum" style="color:#ff4d6d; font-size:11px;">0</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
-          <span style="width:50px; color:#ffb300; font-size:11px;">MED</span>
-          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
-            <div id="medBar" style="width:0%; height:100%; background:#ffb300; border-radius:3px; transition:width 1s;"></div>
-          </div>
-          <span id="medNum" style="color:#ffb300; font-size:11px;">0</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; margin:6px 0; padding:0 10px;">
-          <span style="width:50px; color:#00ff9c; font-size:11px;">LOW</span>
-          <div style="flex:1; height:6px; background:#0d2a1f; border-radius:3px;">
-            <div id="lowBar" style="width:0%; height:100%; background:#00ff9c; border-radius:3px; transition:width 1s;"></div>
-          </div>
-          <span id="lowNum" style="color:#00ff9c; font-size:11px;">0</span>
-        </div>
+        <div class="bar-row"><span class="red">HIGH</span><div class="bar"><div id="highBar" style="background:var(--red);"></div></div><span id="highNum" class="red">0</span></div>
+        <div class="bar-row"><span class="amber">MED</span><div class="bar"><div id="medBar" style="background:var(--amber);"></div></div><span id="medNum" class="amber">0</span></div>
+        <div class="bar-row"><span class="green">LOW</span><div class="bar"><div id="lowBar" style="background:var(--green);"></div></div><span id="lowNum" class="green">0</span></div>
       </div>
     </div>
 
@@ -156,18 +156,68 @@
       <span class="prompt">></span>
       <input type="text" id="newsQuery" placeholder="Enter military/geopolitical query...">
       <button id="searchBtn" class="btn-primary">🔍 SEARCH INTEL</button>
-      <button id="watchBtn" class="btn-primary" style="background:#ffb300; color:#03060a;" title="Re-run this query on a schedule and alert on new high-confidence stories">🔔 WATCH</button>
+      <button id="watchBtn" class="btn-primary btn-amber" title="Re-run this query on a schedule and alert on new high-confidence stories">🔔 WATCH</button>
     </div>
     <div id="watchPanel" class="panel" style="margin-bottom:12px; display:none;">
-      <div class="panel-title">// WATCHLIST <span id="watchMeta" style="color:#3a7a5c; font-weight:normal; font-size:10px; margin-left:8px;"></span></div>
+      <div class="panel-title">// WATCHLIST <span id="watchMeta" class="muted" style="font-weight:normal; font-size:10px; margin-left:8px;"></span></div>
       <div id="watchList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
       <div style="margin-top:8px; display:flex; gap:8px;">
         <button class="why-btn" onclick="runWatchlist()">RUN NOW</button>
         <button class="why-btn" onclick="testAlert()">TEST TELEGRAM</button>
-        <span id="watchStatus" style="color:#3a7a5c; font-size:11px; align-self:center;"></span>
+        <span id="watchStatus" class="muted" style="font-size:11px; align-self:center;"></span>
       </div>
     </div>
+    <div id="pipelineHud" class="panel pipeline-hud" style="display:none;">
+      <div class="panel-title">// PIPELINE <span id="pipelineQuery" class="muted" style="font-weight:normal; font-size:10px; margin-left:8px;"></span></div>
+      <ol id="pipelineStages" class="pipeline-stages"></ol>
+    </div>
+    <div id="timelinePanel" class="panel" style="display:none; margin-bottom:12px;">
+      <div class="panel-title">// STORY TIMELINE <span id="timelineMeta" class="muted" style="font-weight:normal; font-size:10px; margin-left:8px;"></span></div>
+      <div id="timelineBody"></div>
+    </div>
     <div id="newsResults" class="results"></div>
+  </section>
+
+  <!-- SCREEN: BRIEF -->
+  <section id="screen-brief" class="screen">
+    <div class="search-bar" style="justify-content:space-between;">
+      <div class="panel-title" style="margin:0;">// DAILY INTELLIGENCE BRIEF — SITREP</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="briefRefresh" class="btn-primary">🔄 REGENERATE</button>
+        <button id="briefSend" class="btn-primary btn-amber">📨 SEND TO TELEGRAM</button>
+        <button id="briefDownload" class="btn-primary btn-cyan">⬇ MARKDOWN</button>
+        <button class="btn-primary btn-cyan" onclick="window.print()">🖨 PRINT / PDF</button>
+      </div>
+    </div>
+    <div id="briefStatus" class="muted" style="font-size:11px; margin-bottom:8px;"></div>
+    <div id="briefResults" class="results"></div>
+  </section>
+
+  <!-- SCREEN: GRAPH -->
+  <section id="screen-graph" class="screen">
+    <div class="search-bar">
+      <select id="graphQuery"><option value="">ALL RECENT SEARCHES (24H)</option></select>
+      <select id="graphHours">
+        <option value="24">LAST 24H</option><option value="72">LAST 3 DAYS</option><option value="168">LAST 7 DAYS</option>
+      </select>
+      <button id="graphBtn" class="btn-primary">🕸️ BUILD GRAPH</button>
+      <span id="graphMeta" class="muted" style="font-size:11px; align-self:center;"></span>
+    </div>
+    <div class="panel">
+      <div class="panel-title">// KNOWLEDGE GRAPH — STORIES ↔ ENTITIES ↔ COUNTRIES ↔ LEADERS</div>
+      <div style="position:relative;">
+        <canvas id="graphCanvas" class="graph-canvas"></canvas>
+        <div id="graphTip" class="graph-tip" style="display:none;"></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--cyan);"></i> story</span>
+        <span><i style="background:var(--green);"></i> country / place</span>
+        <span><i style="background:var(--amber);"></i> person</span>
+        <span><i style="background:var(--red);"></i> weapon</span>
+        <span><i style="background:var(--violet);"></i> organisation</span>
+        <span class="muted">drag nodes · hover for details · click a story to open its source · click a country to open its dossier</span>
+      </div>
+    </div>
   </section>
 
   <!-- SCREEN: COUNTRIES -->
@@ -209,7 +259,7 @@
   <section id="screen-nuclear" class="screen">
     <div class="panel">
       <div class="panel-title">// ☢️ GLOBAL NUCLEAR ARSENAL — DECLARED & ESTIMATED WARHEADS</div>
-      <div style="color:#888; font-size:11px; margin-bottom:16px;">Source: Federation of American Scientists (FAS) public estimates — OSINT data only</div>
+      <div class="dim" style="font-size:11px; margin-bottom:16px;">Source: Federation of American Scientists (FAS) public estimates — OSINT data only</div>
       <div id="nuclearBars"></div>
     </div>
     <div class="grid-2" style="margin-top:14px;">
@@ -228,7 +278,7 @@
   <section id="screen-alliances" class="screen">
     <div class="panel">
       <div class="panel-title">// 🤝 MILITARY ALLIANCES — GLOBAL POWER BLOCS</div>
-      <div id="allianceMap" style="height:340px; width:100%; border-radius:8px; border:1px solid #0d4a33;"></div>
+      <div id="allianceMap" class="map-box" style="height:340px;"></div>
     </div>
     <div id="allianceCards" class="grid-2" style="margin-top:14px;"></div>
   </section>
@@ -238,17 +288,27 @@
     <div class="ticker-label">⚡ LIVE INTEL</div>
     <div class="ticker">
       <div class="ticker-content" id="tickerContent">
-        SENTINEL 2.0 ONLINE — Monitoring global OSINT sources — Real-time news verification active —
+        SENTINEL 2.2 ONLINE — Monitoring global OSINT sources — Real-time news verification active —
       </div>
     </div>
   </div>
 
   <!-- FOOTER -->
   <footer class="footer">
-    SENTINEL 2.0 analyzes publicly available news sources using AI verification.
+    SENTINEL 2.2 analyzes publicly available news sources using AI verification.
     Not affiliated with any government or intelligence agency. OSINT for educational purposes.
+    <span class="dim">· Ctrl+K for commands · links are shareable (#/country/India, #/news?q=…)</span>
   </footer>
 
+</div>
+
+<!-- COMMAND PALETTE -->
+<div id="palette" class="palette-overlay" style="display:none;">
+  <div class="palette-box">
+    <input id="paletteInput" type="text" placeholder="Type a command… e.g. dossier india · compare us china · watch iran · news red sea · brief · graph · theme" autocomplete="off">
+    <ul id="paletteList" class="palette-list"></ul>
+    <div class="palette-hint muted">↑↓ navigate · Enter run · Esc close</div>
+  </div>
 </div>
 
 <script>

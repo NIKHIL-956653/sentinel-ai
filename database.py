@@ -26,6 +26,7 @@ countries_collection = db["country_profiles"] # country dossiers
 statements_collection = db["leader_statements"]  # leader quotes (24h TTL)
 weapons_collection = db["weapons_detail_cache"]
 forces_collection = db["special_forces"]
+briefs_collection = db["briefs"]                # daily intelligence briefs (services/brief.py)
 
 _warned = False
 
@@ -110,6 +111,34 @@ def get_recent_news(hours: int = 24) -> list:
     return [_strip_id(d) for d in docs]
 
 
+def get_query_history(query: str, days: int = 7, limit: int = 60) -> list:
+    """
+    Every archived run of `query` in the last `days`, oldest first — the raw material for the
+    timeline view (how a story's confidence / verdict / claims evolved between runs).
+    """
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    clean = query.strip().lower()
+    docs = _safe(lambda: list(news_collection.find(
+        {"$or": [{"query_norm": clean}, {"query": {"$regex": f"^{re.escape(clean)}$", "$options": "i"}}],
+         "timestamp": {"$gte": cutoff}}).sort("timestamp", -1).limit(limit)), [], "get_query_history")
+    docs = [_strip_id(d) for d in docs]
+    docs.reverse()
+    return docs
+
+
+def get_recent_queries(hours: int = 24 * 7, limit: int = 30) -> list:
+    """Distinct queries searched recently with run counts — for the timeline picker."""
+    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    pipeline = [
+        {"$match": {"timestamp": {"$gte": cutoff}}},
+        {"$group": {"_id": {"$ifNull": ["$query_norm", "$query"]}, "query": {"$first": "$query"},
+                    "runs": {"$sum": 1}, "last": {"$max": "$timestamp"}}},
+        {"$sort": {"last": -1}}, {"$limit": limit},
+    ]
+    docs = _safe(lambda: list(news_collection.aggregate(pipeline)), [], "get_recent_queries")
+    return [{"query": d.get("query"), "runs": d.get("runs"), "last": d.get("last")} for d in docs]
+
+
 def get_all_stories(hours: int = 24) -> list:
     stories = []
     for search in get_recent_news(hours):
@@ -148,6 +177,25 @@ def save_statements(statements: list) -> None:
         statements_collection.delete_many({})
         statements_collection.insert_one({"timestamp": datetime.utcnow(), "statements": statements})
     _safe(_replace, None, "save_statements")
+
+
+# ── Briefs ──────────────────────────────────────────────────────────────────
+def get_cached_brief(hours: int):
+    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    doc = _safe(lambda: briefs_collection.find_one({"timestamp": {"$gte": cutoff}}, sort=[("timestamp", -1)]),
+                None, "get_cached_brief")
+    return _strip_id(doc) if doc else None
+
+
+def save_brief(brief: dict) -> None:
+    _safe(lambda: briefs_collection.insert_one({**brief, "timestamp": datetime.utcnow()}), None, "save_brief")
+    brief.pop("_id", None)
+
+
+def list_briefs(limit: int = 14) -> list:
+    docs = _safe(lambda: list(briefs_collection.find({}, {"sections": 0}).sort("timestamp", -1).limit(limit)),
+                 [], "list_briefs")
+    return [_strip_id(d) for d in docs]
 
 
 # ── Generic LLM-output cache (weapons, special forces) ──────────────────────

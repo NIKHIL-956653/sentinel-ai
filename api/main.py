@@ -2,22 +2,28 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response
+from fastapi.responses import Response, PlainTextResponse
 import json
 from api.routes.news import router
 from api.routes.country import router as country_router
-from api.security import protect
-from config import ALLOWED_ORIGINS, SENTINEL_API_KEY, PUBLIC_SITE_URL
+from api.security import protect, limiter_backend
+from api.logging_setup import configure as configure_logging, request_logger
+from api import metrics
+from config import ALLOWED_ORIGINS, SENTINEL_API_KEY, PUBLIC_SITE_URL, APP_VERSION
 from database import mongo_available
 from services.watchlist import start_scheduler
+from services import brief as brief_svc
 
 from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    configure_logging()
     if start_scheduler():
         print("⏰ watchlist scheduler started")
+    if brief_svc.start_scheduler():
+        print("🗞 brief scheduler started")
     yield
 
 
@@ -25,7 +31,7 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="SENTINEL AI",
     description="Military Intelligence & News Verification Platform",
-    version="2.0.0",
+    version=APP_VERSION,
     lifespan=lifespan,
 )
 
@@ -38,8 +44,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API key + per-IP rate limiting (api/security.py)
+# Order matters: middleware registered last runs first. Logger wraps the key/limit check so
+# 401/429 responses are logged too.
 app.middleware("http")(protect)
+app.middleware("http")(request_logger)
 
 # Include routes
 app.include_router(router, prefix="/api/v1")
@@ -50,17 +58,32 @@ async def root():
     return {
         "service": "SENTINEL AI 🕵️",
         "status": "ONLINE",
-        "version": "2.0.0",
+        "version": APP_VERSION,
         "database": "MongoDB ✅" if mongo_available() else "MongoDB unreachable ⚠️",
         "auth": "api-key required" if SENTINEL_API_KEY else "open (set SENTINEL_API_KEY to protect)",
+        "rate_limiter": limiter_backend(),
         "endpoints": {
             "app": "/app",
             "news": "/api/v1/news",
+            "news_stream": "/api/v1/news/stream (SSE)",
+            "timeline": "/api/v1/news/timeline?q=",
+            "graph": "/api/v1/graph",
+            "brief": "/api/v1/brief",
+            "export": "/api/v1/export/news?q=&format=md",
+            "stats": "/api/v1/stats",
+            "metrics": "/metrics",
             "health": "/api/v1/health",
             "recent": "/api/v1/recent",
             "docs": "/docs"
         }
     }
+
+
+@app.get("/metrics", include_in_schema=False)
+async def prometheus_metrics():
+    """Prometheus exposition (request counts/latency per route, LLM tokens & cost, pipeline counters)."""
+    return PlainTextResponse(metrics.prometheus_text(), media_type="text/plain; version=0.0.4; charset=utf-8")
+
 
 @app.get("/app-config.js", include_in_schema=False)
 async def app_config_js():
@@ -71,7 +94,8 @@ async def app_config_js():
     """
     body = (f"window.SENTINEL_API_KEY = {json.dumps(SENTINEL_API_KEY)};\n"
             f"window.SENTINEL_API_BASE = \"\";  /* same origin */\n"
-            f"window.SENTINEL_PUBLIC_URL = {json.dumps(PUBLIC_SITE_URL)};\n")
+            f"window.SENTINEL_PUBLIC_URL = {json.dumps(PUBLIC_SITE_URL)};\n"
+            f"window.SENTINEL_VERSION = {json.dumps(APP_VERSION)};\n")
     return Response(body, media_type="application/javascript",
                     headers={"Cache-Control": "no-store"})
 

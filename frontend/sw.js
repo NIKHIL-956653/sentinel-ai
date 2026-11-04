@@ -1,7 +1,7 @@
 // SENTINEL service worker — installable + instant reopen.
 // Strategy (lesson from the game): NETWORK-FIRST for code (html/js/css) so a new deploy is never
 // masked by a stale cache; CACHE-FIRST for icons/fonts/tiles. API calls are never cached.
-const CACHE = "sentinel-v1";
+const CACHE = "sentinel-v2";
 const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json",
                "./icons/icon-192.png", "./icons/icon-512.png"];
 
