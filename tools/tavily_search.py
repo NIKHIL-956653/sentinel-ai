@@ -3,21 +3,28 @@ from config import (
     TAVILY_API_KEY,
     TAVILY_MAX_RESULTS,
     TAVILY_SEARCH_DEPTH,
-    TAVILY_INCLUDE_DOMAINS
+    TAVILY_INCLUDE_DOMAINS,
+    HTTP_TIMEOUT_SECONDS,
+    DEMO_MODE,
 )
 
-client = TavilyClient(api_key=TAVILY_API_KEY)
+client = TavilyClient(api_key=TAVILY_API_KEY or "demo")
 
 def search_military_news(query: str) -> list:
     """Search for military/geopolitical news"""
     
     print(f"🔍 Searching: {query}")
-    
+
+    if DEMO_MODE:
+        from demo.fixtures import demo_articles
+        return demo_articles(query)
+
     response = client.search(
         query=query,
         search_depth=TAVILY_SEARCH_DEPTH,
         max_results=TAVILY_MAX_RESULTS,
-        include_domains=TAVILY_INCLUDE_DOMAINS
+        include_domains=TAVILY_INCLUDE_DOMAINS,
+        timeout=HTTP_TIMEOUT_SECONDS,
     )
     
     articles = []

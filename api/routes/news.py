@@ -7,15 +7,18 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse, PlainTextResponse
 from pydantic import BaseModel as _BM
 
-from api.models.news_model import NewsRequest, NewsResponse
+from api.models.news_model import (NewsRequest, NewsResponse, TimelineResponse, GraphResponse, BriefResponse,
+                                   StatsResponse, SourceReliability)
 from database import mongo_available, get_recent_news, get_all_stories, get_recent_queries, get_cached_results, list_briefs
-from config import NEWS_CACHE_HOURS, APP_VERSION
+from config import NEWS_CACHE_HOURS, APP_VERSION, DEMO_MODE
 from services.news_service import run_news_query, NoArticles, STAGES
 from services import watchlist as wl
 from services import brief as brief_svc
 from services.timeline import timeline_for
 from services.graph import build_graph
+from services.reliability import reliability_report
 from tools import telegram
+from tools.llm import budget_status
 from tools.report import news_markdown
 from api import metrics
 from api.security import limiter_backend
@@ -77,7 +80,7 @@ async def get_news_stream(request: NewsRequest):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@router.get("/news/timeline")
+@router.get("/news/timeline", response_model=TimelineResponse)
 async def news_timeline(q: str = Query(..., min_length=1), days: int = Query(7, ge=1, le=90)):
     """How a query's stories evolved across archived runs (confidence / verdict per run)."""
     return timeline_for(q, days=days)
@@ -94,8 +97,11 @@ async def health_check():
         "status": "online",
         "service": "SENTINEL AI",
         "version": APP_VERSION,
-        "database": "MongoDB connected ✅" if mongo_available() else "MongoDB unreachable ⚠️ (caching disabled)",
+        "database": ("in-memory (DEMO_MODE)" if DEMO_MODE else
+                     "MongoDB connected ✅" if mongo_available() else "MongoDB unreachable ⚠️ (caching disabled)"),
         "rate_limiter": limiter_backend(),
+        "demo_mode": DEMO_MODE,
+        "llm_budget": budget_status(),
     }
 
 
@@ -109,21 +115,29 @@ async def get_recent():
     }
 
 
-@router.get("/stats")
+@router.get("/stats", response_model=StatsResponse)
 async def stats():
     """Runtime counters for the frontend status panel (LLM calls / tokens / cost, latency per route)."""
-    return metrics.snapshot()
+    return {**metrics.snapshot(), "budget": budget_status()}
+
+
+@router.get("/sources", response_model=dict)
+async def sources(hours: int = Query(24 * 30, ge=1, le=24 * 365)):
+    """Per-outlet reliability learned from the archive (see services/reliability.py for the formula + caveats)."""
+    rep = await asyncio.to_thread(reliability_report, hours)
+    rep["sources"] = [SourceReliability(**r).model_dump() for r in rep["sources"]]
+    return rep
 
 
 # ── Knowledge graph ─────────────────────────────────────────────────────────
-@router.get("/graph")
+@router.get("/graph", response_model=GraphResponse, response_model_by_alias=True)
 async def graph(q: str | None = None, hours: int = Query(24, ge=1, le=24 * 30)):
     """Stories ↔ entities ↔ countries from archived searches (no LLM call here)."""
     return build_graph(get_all_stories(hours), query=q)
 
 
 # ── Intelligence brief ──────────────────────────────────────────────────────
-@router.get("/brief")
+@router.get("/brief", response_model=BriefResponse, response_model_exclude_none=False)
 async def get_brief(refresh: bool = False, format: str = "json"):
     b = await asyncio.to_thread(brief_svc.build_brief, brief_svc.BRIEF_WINDOW_HOURS, brief_svc.chat_json, refresh)
     if format == "md":

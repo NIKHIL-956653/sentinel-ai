@@ -30,6 +30,25 @@ ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "30"))        # any endpoint, per IP
 EXPENSIVE_LIMIT_PER_MINUTE = int(os.getenv("EXPENSIVE_LIMIT_PER_MINUTE", "8"))  # endpoints that call Tavily/LLM
 
+# Behind a reverse proxy (Render, nginx, Cloudflare) that overwrites X-Forwarded-For? Then true. Otherwise
+# the header is attacker-controlled and honouring it would let anyone dodge the per-IP rate limit.
+TRUST_PROXY = os.getenv("TRUST_PROXY", "false").lower() == "true"
+# At most this many full search pipelines in flight per process (each = Tavily + 4 LLM calls).
+PIPELINE_MAX_CONCURRENT = int(os.getenv("PIPELINE_MAX_CONCURRENT", "4"))
+# Hard spend ceiling: once today's LLM cost (reported or estimated) passes this, LLM calls fail fast
+# with LLMError until midnight UTC. 0 = unlimited. Deterministic fallbacks keep the app usable.
+LLM_DAILY_BUDGET_USD = float(os.getenv("LLM_DAILY_BUDGET_USD", "0"))
+# Max saved watchlist queries (each costs a Tavily search + 4 LLM calls per interval).
+MAX_WATCHES = int(os.getenv("MAX_WATCHES", "20"))
+# Outbound HTTP timeouts (seconds) for Tavily / Wikipedia so a stalled upstream cannot pin a worker.
+HTTP_TIMEOUT_SECONDS = int(os.getenv("HTTP_TIMEOUT_SECONDS", "20"))
+# Max characters of a user query accepted by /news and the watchlist.
+MAX_QUERY_LENGTH = int(os.getenv("MAX_QUERY_LENGTH", "200"))
+
+# Demo mode: no API keys, no network — canned (clearly fictional) search results and LLM output so the
+# whole UI can be explored. Never use in production; /health and the UI banner say when it is on.
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+
 # Optional Redis for the rate limiter (multi-instance deployments). Empty = in-memory window.
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
 
@@ -52,6 +71,11 @@ BRIEF_WINDOW_HOURS = int(os.getenv("BRIEF_WINDOW_HOURS", "24"))
 # Approximate USD per 1M tokens, used only when OpenRouter does not return a cost (shown as "est.")
 LLM_PRICE_IN_PER_M = float(os.getenv("LLM_PRICE_IN_PER_M", "0.15"))
 LLM_PRICE_OUT_PER_M = float(os.getenv("LLM_PRICE_OUT_PER_M", "0.60"))
+
+# Watchlist alert rules (services/watchlist.py): new HIGH stories always; optionally also when a claim
+# becomes disputed, and when a watched query's story count jumps by ALERT_SURGE_FACTOR between runs.
+ALERT_ON_DISPUTED = os.getenv("ALERT_ON_DISPUTED", "true").lower() == "true"
+ALERT_SURGE_FACTOR = float(os.getenv("ALERT_SURGE_FACTOR", "2.0"))   # 0 = off
 
 # Watchlist + Telegram alerts (services/watchlist.py, tools/telegram.py)
 WATCHLIST_ENABLED = os.getenv("WATCHLIST_ENABLED", "true").lower() == "true"

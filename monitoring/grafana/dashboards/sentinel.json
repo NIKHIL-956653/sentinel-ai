@@ -1,0 +1,38 @@
+{
+  "title": "SENTINEL AI",
+  "uid": "sentinel-ai",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": {"from": "now-6h", "to": "now"},
+  "panels": [
+    {"id": 1, "type": "stat", "title": "Requests / min", "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+     "targets": [{"expr": "sum(rate(sentinel_http_requests_total[5m])) * 60", "refId": "A"}]},
+    {"id": 2, "type": "stat", "title": "5xx / min", "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+     "targets": [{"expr": "sum(rate(sentinel_http_requests_total{status=~\"5..\"}[5m])) * 60", "refId": "A"}],
+     "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}}},
+    {"id": 3, "type": "stat", "title": "LLM cost today (USD)", "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+     "targets": [{"expr": "increase(sentinel_llm_cost_usd_total[24h])", "refId": "A"}],
+     "fieldConfig": {"defaults": {"decimals": 3, "unit": "currencyUSD"}}},
+    {"id": 4, "type": "stat", "title": "Cache hit rate", "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+     "targets": [{"expr": "sum(increase(sentinel_searches_total{result=\"cache_hit\"}[1h])) / clamp_min(sum(increase(sentinel_searches_total[1h])), 1)", "refId": "A"}],
+     "fieldConfig": {"defaults": {"unit": "percentunit", "max": 1, "min": 0}}},
+    {"id": 5, "type": "timeseries", "title": "Request latency p50 / p95 by route", "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+     "targets": [
+       {"expr": "histogram_quantile(0.5, sum(rate(sentinel_http_request_duration_seconds_bucket[5m])) by (le, route))", "legendFormat": "p50 {{route}}", "refId": "A"},
+       {"expr": "histogram_quantile(0.95, sum(rate(sentinel_http_request_duration_seconds_bucket[5m])) by (le, route))", "legendFormat": "p95 {{route}}", "refId": "B"}],
+     "fieldConfig": {"defaults": {"unit": "s"}}},
+    {"id": 6, "type": "timeseries", "title": "Requests by status", "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+     "targets": [{"expr": "sum(rate(sentinel_http_requests_total[5m])) by (status)", "legendFormat": "{{status}}", "refId": "A"}]},
+    {"id": 7, "type": "timeseries", "title": "LLM tokens / min", "gridPos": {"x": 0, "y": 12, "w": 8, "h": 7},
+     "targets": [{"expr": "sum(rate(sentinel_llm_tokens_total[5m])) by (kind) * 60", "legendFormat": "{{kind}}", "refId": "A"}]},
+    {"id": 8, "type": "timeseries", "title": "LLM calls & errors / min", "gridPos": {"x": 8, "y": 12, "w": 8, "h": 7},
+     "targets": [
+       {"expr": "rate(sentinel_llm_calls_total[5m]) * 60", "legendFormat": "calls", "refId": "A"},
+       {"expr": "rate(sentinel_llm_errors_total[5m]) * 60", "legendFormat": "errors", "refId": "B"}]},
+    {"id": 9, "type": "timeseries", "title": "Stories & contradictions / hour", "gridPos": {"x": 16, "y": 12, "w": 8, "h": 7},
+     "targets": [
+       {"expr": "increase(sentinel_stories_total[1h])", "legendFormat": "stories", "refId": "A"},
+       {"expr": "increase(sentinel_contradictions_total[1h])", "legendFormat": "contradictions", "refId": "B"}]}
+  ]
+}

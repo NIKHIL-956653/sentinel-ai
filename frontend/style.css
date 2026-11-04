@@ -83,6 +83,15 @@ body {
 .bg-rain { position: fixed; inset: 0; opacity: var(--rain-opacity); z-index: 0; pointer-events: none; }
 :root[data-motion="off"] .bg-rain, :root[data-motion="off"] #bootRain { display: none; }
 
+.demo-banner { position: relative; z-index: 3; background: var(--amber); color: var(--bg); font-size: 12px; letter-spacing: 1px; padding: 6px 12px; border-radius: 6px; margin-bottom: 12px; text-align: center; font-weight: bold; }
+.src-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.src-table th { color: var(--muted); font-weight: normal; text-align: left; padding: 6px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 10px; letter-spacing: 1px; }
+.src-table td { padding: 6px; border-bottom: 1px solid var(--border2); color: var(--text); vertical-align: middle; }
+.src-bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--border2); width: 90px; vertical-align: middle; overflow: hidden; }
+.src-bar > i { display: block; height: 100%; }
+.pill { font-size: 9px; letter-spacing: 1px; padding: 1px 6px; border-radius: 3px; border: 1px solid; }
+.pill.trusted { color: var(--green); border-color: var(--green); } .pill.unreliable { color: var(--red); border-color: var(--red); } .pill.unknown { color: var(--dim); border-color: var(--dim); }
+
 /* ───── HEADER ───── */
 .header {
   position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center;

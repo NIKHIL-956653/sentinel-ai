@@ -12,12 +12,18 @@ Design:
 import re
 from datetime import datetime, timedelta
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import PyMongoError
 
-from config import MONGODB_URI, MONGODB_DB
+from config import MONGODB_URI, MONGODB_DB, DEMO_MODE
 
-client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=3000)
+if DEMO_MODE:
+    # In-memory Mongo-compatible store: the demo needs the archive (timeline / brief / graph) to work
+    # without a database. Data lives for the life of the process only.
+    import mongomock
+    client = mongomock.MongoClient()
+else:
+    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=3000)
 db = client[MONGODB_DB]
 
 # Collections
@@ -29,6 +35,24 @@ forces_collection = db["special_forces"]
 briefs_collection = db["briefs"]                # daily intelligence briefs (services/brief.py)
 
 _warned = False
+
+
+def ensure_indexes() -> bool:
+    """
+    Indexes for the queries this module runs (cache lookups, timeline, briefs, watchlist). Fail-soft:
+    called once at startup; without them every lookup scans the whole archive, which grows per search.
+    """
+    def _create():
+        news_collection.create_index([("query_norm", ASCENDING), ("timestamp", DESCENDING)], name="query_time")
+        news_collection.create_index([("timestamp", DESCENDING)], name="time")
+        countries_collection.create_index([("country_key", ASCENDING)], name="country", unique=True)
+        statements_collection.create_index([("timestamp", DESCENDING)], name="time")
+        weapons_collection.create_index([("key", ASCENDING)], name="key", unique=True)
+        forces_collection.create_index([("key", ASCENDING)], name="key", unique=True)
+        briefs_collection.create_index([("timestamp", DESCENDING)], name="time")
+        db["watchlist"].create_index([("query_norm", ASCENDING)], name="query", unique=True)
+        return True
+    return bool(_safe(_create, False, "ensure_indexes"))
 
 
 def get_db():

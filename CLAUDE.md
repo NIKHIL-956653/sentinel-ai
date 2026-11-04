@@ -84,6 +84,10 @@ Weapons (`/weapons/{country}/{category}`), special forces (`/special-forces/{cou
 | `tools/geotag.py` | One LLM call per search → country per story → `COUNTRY_COORDS` centroid; `story["geo"]` |
 | `tools/grounding.py` | Batched Wikipedia title verification → `source_url` / `grounded` on LLM-generated items |
 | `tools/military_data.py` | Open statistics from `data/military_open_data.json` (ISO3-keyed; `scripts/fetch_open_data.py` creates it) |
+| `services/reliability.py` | Per-outlet corroboration/verified/disputed rates from the archive (`/sources`); pure `score_sources()` |
+| `demo/fixtures.py` | `DEMO_MODE` stand-ins for Tavily, every LLM prompt family and the Wikipedia profile; fictional names only; `database.py` uses `mongomock` in this mode |
+| `docs/SYSTEM_DESIGN.md`, `docs/THREAT_MODEL.md` | The design decisions and the threat → control → residual table. Update the threat table when adding an input, an outbound call or a paid code path |
+| `tests/e2e/ui.spec.js` | Playwright run against the DEMO_MODE app (CI job `e2e`) |
 | `api/security.py` | API-key check + per-IP sliding-window rate limits (middleware); memory by default, Redis ZSET window when `REDIS_URL` is set (falls back to memory on error). Key enforced only when `SENTINEL_API_KEY` is set |
 | `sentinel_checker.py` | Static consistency checks (HTML ids ↔ JS, routes ↔ fetch calls, imports, no OpenRouter calls outside llm.py). Run `python sentinel_checker.py` |
 | `tests/` | pytest suite — no network, no Mongo (conftest points MONGODB_URI at a dead port and mocks `chat_json`) |
@@ -113,7 +117,10 @@ suffix when the item shape changes.
 - Motion: check `motionOn()` before animating; the OS `prefers-reduced-motion` and the ◴ toggle both disable it.
 
 ### Rules of the codebase
-- New heavy endpoints go in `EXPENSIVE_PREFIXES` (api/security.py).
+- New heavy endpoints go in `EXPENSIVE_PREFIXES` (api/security.py); anything that runs the full pipeline goes in `PIPELINE_PATHS` too.
+- Any text from a web page that enters a prompt goes through `tools.llm.untrusted()` and the prompt carries `UNTRUSTED_NOTE`.
+- A new LLM prompt template needs a matching branch in `demo/fixtures.demo_llm` (marker phrase) or demo mode breaks — `tests/test_hardening.py::test_demo_pipeline_end_to_end_without_keys` catches it.
+- Every outbound HTTP call has a timeout (`HTTP_TIMEOUT_SECONDS` / `LLM_TIMEOUT_SECONDS`).
 - New LLM steps in the pipeline: add a stage to `STAGES`, call `on_stage`, keep it fail-soft, add a pure `parse_*` with tests.
 - Anything that reads the archive (timeline/graph/brief) must not trigger new Tavily/LLM collection — only `run_news_query` does.
 - The scraper is gone: never re-add HTML scraping of third-party sites; use the open dataset.
@@ -133,4 +140,5 @@ suffix when the item shape changes.
 - Watchlist scheduler is in-process; it sleeps if the host sleeps.
 - Weapons / special-forces content is LLM-generated (not from an authoritative dataset).
 - Claims / entities / brief are LLM outputs: validated and labelled, not ground truth; their eval needs a key (`eval/run_eval.py`).
-- Metrics are per process (reset on restart); `expenditure_series` only exists after re-running `scripts/fetch_open_data.py`.
+- Metrics, the LLM daily budget and the concurrency gate are per process (reset on restart); `expenditure_series` only exists after re-running `scripts/fetch_open_data.py`.
+- Outlet reliability scores partly depend on the hand-written trusted list (VERIFIED needs a trusted outlet) — the UI says so.

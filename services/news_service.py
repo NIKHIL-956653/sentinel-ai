@@ -1,10 +1,13 @@
 """
 The news pipeline as a plain function, so the /news route, /news/stream and the watchlist
-scheduler run exactly the same code: cache → collect → verify → claims → entities → geotag → save.
+scheduler run exactly the same code: cache → collect → verify → enrich (claims ∥ entities ∥ geotag) → save.
 
 `on_stage(name, detail)` is an optional callback (used by the SSE endpoint to stream progress).
+The three enrichment steps are independent LLM calls, so they run concurrently in a small thread
+pool: a fresh search costs the latency of the slowest one instead of the sum.
 """
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from agents.collector_agent import CollectorAgent
 from agents.verifier_agent import VerifierAgent
@@ -39,6 +42,32 @@ def _noop(name: str, detail: str = "") -> None:
     pass
 
 
+def enrich(stories: list, stage=_noop) -> None:
+    """claims ∥ entities ∥ geotag — each fail-soft, each reports its own stage when it starts/ends."""
+    jobs = []
+    if CLAIMS_ENABLED:
+        jobs.append(("claims", extract_claims))
+    else:
+        for s in stories:
+            s.setdefault("claims", [])
+    if ENTITIES_ENABLED:
+        jobs.append(("entities", extract_entities))
+    else:
+        for s in stories:
+            s.setdefault("entities", [])
+    jobs.append(("geotag", geotag_stories))
+
+    def run(job):
+        name, fn = job
+        stage(name, "running in parallel")
+        t0 = time.time()
+        fn(stories)          # every fn mutates stories in place and never raises
+        stage(name, f"done in {time.time() - t0:.1f}s")
+
+    with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
+        list(pool.map(run, jobs))
+
+
 def run_news_query(query: str, cache_hours: int = NEWS_CACHE_HOURS, on_stage=None) -> dict:
     """Returns the /news response dict plus `fresh` (False when served from cache)."""
     stage = on_stage or _noop
@@ -70,21 +99,7 @@ def run_news_query(query: str, cache_hours: int = NEWS_CACHE_HOURS, on_stage=Non
     verified = _verifier.verify(collected)
     stories = verified["results"]
 
-    if CLAIMS_ENABLED:
-        stage("claims", "Extracting atomic claims & cross-source corroboration")
-        extract_claims(stories)
-    else:
-        for s in stories:
-            s.setdefault("claims", [])
-    if ENTITIES_ENABLED:
-        stage("entities", "Extracting entities for the knowledge graph")
-        extract_entities(stories)
-    else:
-        for s in stories:
-            s.setdefault("entities", [])
-
-    stage("geotag", "Geotagging stories for the threat map")
-    geotag_stories(stories)
+    enrich(stories, stage)
 
     stage("save", "Saving to archive")
     save_news_results(query, {
