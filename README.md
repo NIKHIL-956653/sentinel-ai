@@ -306,6 +306,18 @@ watchlist scheduler sleeps with it — point a free cron (e.g. cron-job.org) at
 `POST https://<service>.onrender.com/api/v1/watchlist/run` with header `X-API-Key` to keep alerts flowing.
 Every push to `main` redeploys automatically after CI.
 
+## Deploy variant: Netlify (frontend) + Render (API)
+
+`netlify.toml` publishes `frontend/` and **proxies** `/api/*` and `/app-config.js` to the backend, so the site is
+same-origin (no CORS, nothing to configure in `index.html`). Steps:
+
+1. Deploy the backend on Render first (Blueprint → `render.yaml`) and note its URL, e.g. `https://sentinel-ai.onrender.com`.
+2. In `netlify.toml` replace that URL in both `to = …` lines (or keep it if that is your service name) and push.
+3. Netlify → *Deploys* → the push builds automatically (publish dir `frontend`, no build command). The page is at the site root, not `/app/`.
+4. On Render set `ALLOWED_ORIGINS` to your Netlify URL only if you call the API cross-origin; with the proxy it is not needed.
+
+"Project has not yet been deployed" on Netlify just means no build has run yet — it needs this file (or the same settings in *Project configuration → Build & deploy*) and one push.
+
 ## Security model (read before deploying)
 
 - **`SENTINEL_API_KEY`** — when set, every `/api/v1/*` call (except `/health`) needs header `X-API-Key`.
