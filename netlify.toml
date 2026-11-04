@@ -1,0 +1,43 @@
+# Netlify hosts the static frontend only (frontend/). The FastAPI backend must run elsewhere —
+# e.g. Render via render.yaml. Replace BACKEND below with that URL (no trailing slash), then every
+# /api/* and /app-config.js request is proxied server-side, so the site is same-origin: no CORS,
+# no API base to configure, and the backend's SENTINEL_API_KEY reaches the page via /app-config.js.
+#
+#   BACKEND = https://sentinel-ai.onrender.com     ← change this in BOTH redirects
+#
+# Without a backend, set window.SENTINEL_API_BASE in frontend/index.html instead, or run the backend
+# with DEMO_MODE=true somewhere to show the product with no keys.
+
+[build]
+  publish = "frontend"
+  command = ""
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://sentinel-ai.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/app-config.js"
+  to = "https://sentinel-ai.onrender.com/app-config.js"
+  status = 200
+  force = true
+
+# PWA / deep links: everything else is the single page
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/app-config.js"
+  [headers.values]
+    Cache-Control = "no-store"
