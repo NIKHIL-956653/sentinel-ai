@@ -1,4 +1,5 @@
 import requests
+from config import HTTP_TIMEOUT_SECONDS, DEMO_MODE
 from tools.llm import chat_json, LLMError
 
 def get_country_military_profile(country: str) -> dict:
@@ -8,7 +9,17 @@ def get_country_military_profile(country: str) -> dict:
     """
     
     print(f"🌍 Fetching military profile: {country}")
-    
+
+    if DEMO_MODE:
+        from demo.fixtures import demo_profile
+        profile = demo_profile(country)
+        from tools.military_data import get_stats, provenance
+        stats = get_stats(country)
+        if stats:
+            profile.update({k: v for k, v in stats.items() if k not in ("iso3", "wb_name")})
+        profile["data_provenance"] = provenance()
+        return profile
+
     try:
         # Step 1: Search Wikipedia
         search_url = "https://en.wikipedia.org/w/api.php"
@@ -24,7 +35,8 @@ def get_country_military_profile(country: str) -> dict:
         response = requests.get(
             search_url,
             params=params,
-            headers={"User-Agent": "SENTINEL-AI/1.0"}
+            headers={"User-Agent": "SENTINEL-AI/1.0"},
+            timeout=HTTP_TIMEOUT_SECONDS,
         )
         
         summary = ""
@@ -41,7 +53,8 @@ def get_country_military_profile(country: str) -> dict:
                 # Step 2: Fetch summary
                 summary_response = requests.get(
                     f"https://en.wikipedia.org/api/rest_v1/page/summary/{page_title.replace(' ', '_')}",
-                    headers={"User-Agent": "SENTINEL-AI/1.0"}
+                    headers={"User-Agent": "SENTINEL-AI/1.0"},
+                    timeout=HTTP_TIMEOUT_SECONDS,
                 )
                 
                 if summary_response.status_code == 200:

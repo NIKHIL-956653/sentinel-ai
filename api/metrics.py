@@ -53,6 +53,10 @@ def record_request(path: str, status: int, seconds: float) -> None:
         _req_buckets[key]["inf"] += 1
 
 
+def estimate_cost(prompt_tokens: int, completion_tokens: int) -> float:
+    return (prompt_tokens or 0) / 1e6 * LLM_PRICE_IN_PER_M + (completion_tokens or 0) / 1e6 * LLM_PRICE_OUT_PER_M
+
+
 def record_llm(prompt_tokens: int = 0, completion_tokens: int = 0, seconds: float = 0.0,
                cost: float | None = None, ok: bool = True) -> None:
     with _lock:
@@ -65,8 +69,7 @@ def record_llm(prompt_tokens: int = 0, completion_tokens: int = 0, seconds: floa
         if cost is not None:
             _llm["cost_usd"] += float(cost)
         else:
-            _llm["cost_usd"] += (prompt_tokens or 0) / 1e6 * LLM_PRICE_IN_PER_M \
-                + (completion_tokens or 0) / 1e6 * LLM_PRICE_OUT_PER_M
+            _llm["cost_usd"] += estimate_cost(prompt_tokens, completion_tokens)
             _llm["cost_is_estimate"] = True
 
 

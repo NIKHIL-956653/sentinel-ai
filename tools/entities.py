@@ -9,7 +9,7 @@ Fail-soft: errors → entities = [] on every story.
 """
 import re
 
-from tools.llm import chat_json, LLMError
+from tools.llm import chat_json, LLMError, untrusted, UNTRUSTED_NOTE
 
 ENTITY_TYPES = ("person", "organisation", "weapon", "place")
 MAX_PER_STORY = 8
@@ -64,8 +64,8 @@ def extract_entities(stories: list) -> list:
         s.setdefault("entities", [])
     if not stories:
         return stories
-    lines = [f"[{i}] {(s.get('titles') or ['?'])[0]}" for i, s in enumerate(stories)]
-    prompt = f"""Extract named entities from each headline below. Types: person, organisation, weapon
+    lines = [f"[{i}] {untrusted((s.get('titles') or ['?'])[0], 200)}" for i, s in enumerate(stories)]
+    prompt = f"""Extract named entities from each headline below. {UNTRUSTED_NOTE} Types: person, organisation, weapon
 (a specific weapon system, platform, missile, aircraft, ship class), place (country, city, sea, region).
 Use the most common English name (e.g. "United States", "Vladimir Putin", "F-35"). Max {MAX_PER_STORY} per headline.
 

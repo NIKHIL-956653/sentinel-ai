@@ -1,5 +1,5 @@
 from config import CONTRADICTION_MODE
-from tools.llm import chat_json, LLMError
+from tools.llm import chat_json, LLMError, untrusted, UNTRUSTED_NOTE
 
 # Keyword pairs used by the heuristic detector (cheap, offline, but blunt: "peace" vs "war"
 # fires on unrelated stories). The LLM judge is the default; this is the fallback.
@@ -121,10 +121,10 @@ class VerifierAgent:
             snippet = ""
             arts = story.get("articles") or []
             if arts and arts[0].get("content"):
-                snippet = arts[0]["content"][:240].replace("\n", " ")
-            lines.append(f"[{idx}] {title}" + (f" — {snippet}" if snippet else ""))
+                snippet = untrusted(arts[0]["content"], 240)
+            lines.append(f"[{idx}] {untrusted(title, 200)}" + (f" — {snippet}" if snippet else ""))
         prompt = f"""You are a fact-checking analyst. Below are news stories about the same topic,
-each with an index in square brackets.
+each with an index in square brackets. {UNTRUSTED_NOTE}
 
 Two stories CONTRADICT when they make incompatible factual claims about the same event
 (e.g. one says a ceasefire holds, the other says strikes continued today; one says 12 killed,

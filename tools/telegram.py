@@ -44,3 +44,23 @@ def format_alert(query: str, stories: list, site_url: str = "") -> str:
     if site_url:
         lines.append(f"\n{html.escape(site_url)}")
     return "\n".join(lines)
+
+
+def format_disputed_alert(query: str, items: list, site_url: str = "") -> str:
+    """items = [(story, claim_text, key)] — claims that just became disputed."""
+    lines = [f"⚡ <b>SENTINEL</b> — {len(items)} claim{'' if len(items) == 1 else 's'} now disputed for “{html.escape(query)}”"]
+    for s, claim, _ in items[:5]:
+        title = html.escape((s.get("titles") or ["?"])[0])
+        lines.append(f"• <i>{html.escape(claim)}</i>\n  {title}")
+    if len(items) > 5:
+        lines.append(f"…and {len(items) - 5} more")
+    if site_url:
+        lines.append(f"\n{html.escape(site_url)}")
+    return "\n".join(lines)
+
+
+def format_surge_alert(query: str, prev: int, now: int, site_url: str = "") -> str:
+    lines = [f"📈 <b>SENTINEL</b> — activity surge for “{html.escape(query)}”: {prev} → {now} stories since the last run"]
+    if site_url:
+        lines.append(f"\n{html.escape(site_url)}")
+    return "\n".join(lines)

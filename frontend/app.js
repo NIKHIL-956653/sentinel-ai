@@ -118,6 +118,7 @@ function runBoot() {
     setTimeout(() => {
       document.getElementById("bootScreen").style.display = "none";
       document.getElementById("mainApp").style.display = "block";
+      if (window.SENTINEL_DEMO) document.getElementById("demoBanner").style.display = "block";
       startBgRain();
       initMap();          // container is visible now, so Leaflet measures the real size
       loadSystemStats();  // real numbers for SOURCES / VERIFIED / intel feed / ticker / map
@@ -177,6 +178,7 @@ function showScreen(name, pushHash = true) {
   if (name === "home") setTimeout(() => { if (map) map.invalidateSize(true); }, 100);
   if (name === "brief" && !window.__briefLoaded) loadBrief(false);
   if (name === "graph" && !window.__graphLoaded) loadGraph();
+  if (name === "sources" && !window.__sourcesLoaded) loadSources();
   if (pushHash && !location.hash.startsWith("#/" + name)) setHash("#/" + name);
 }
 document.querySelectorAll(".nav-btn").forEach(btn => btn.addEventListener("click", () => showScreen(btn.dataset.screen)));
@@ -239,7 +241,7 @@ async function loadWatchlist() {
     list.innerHTML = watches.map(w => `
       <span style="border:1px solid var(--amber); border-radius:14px; padding:4px 10px; font-size:12px; color:var(--amber);">
         🔔 <a href="#/news?q=${encodeURIComponent(w.query)}" style="color:inherit; text-decoration:none;">${esc(w.query)}</a>
-        <span class="muted" style="font-size:10px;">${w.last_run ? "· last " + new Date(w.last_run).toUTCString().slice(5, 22) : "· never run"} · ${w.seen_count} seen</span>
+        <span class="muted" style="font-size:10px;">${w.last_run ? "· last " + new Date(w.last_run).toUTCString().slice(5, 22) : "· never run"} · ${w.seen_count} seen${w.disputed_count ? " · " + w.disputed_count + " ⚡" : ""}</span>
         <button onclick="removeWatch(${JSON.stringify(w.query).replace(/"/g, "&quot;")})" style="background:none; border:none; color:var(--red); cursor:pointer; margin-left:4px;">✕</button>
       </span>`).join("");
   } catch (err) { /* backend offline — panel stays hidden */ }
@@ -504,7 +506,7 @@ function renderNews(data) {
           | ${esc(story.verdict || "")}
           | 📡 ${story.source_count || sources.length} SOURCES
           | 🛡️ TRUST: ${story.trust_score ?? 0}
-          ${story.geo ? `| 📍 <a href="#/countries/${encodeURIComponent(story.geo.country)}" style="text-decoration:none;">${esc(story.geo.country)}</a>` : ""}
+          ${story.geo ? `| 📍 <a href="#/countries/${encodeURIComponent(story.geo.country)}" style="text-decoration:none;">${story.geo.place ? esc(story.geo.place) + ", " : ""}${esc(story.geo.country)}</a>${story.geo.precision === "city" ? '<span class="dim" style="font-size:9px;"> city</span>' : ""}` : ""}
           <button class="why-btn" onclick="toggleWhy(this)">WHY?</button>
         </div>
         ${whyPanel(story)}
@@ -780,6 +782,43 @@ function startGraph(g) {
   cv.ontouchend = () => { graph.drag = null; };
   cv.onmouseleave = () => { graph.hover = null; tip.style.display = "none"; };
 }
+
+// ───── SOURCES (outlet reliability) ─────
+async function loadSources() {
+  const el = document.getElementById("sourcesResults");
+  const hours = document.getElementById("sourcesHours").value;
+  el.innerHTML = '<div class="loading">Scoring outlets from the archive</div>';
+  try {
+    const res = await apiFetch(`${API_BASE}/sources?hours=${hours}`);
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    const d = await res.json();
+    window.__sourcesLoaded = true;
+    const rows = d.sources || [];
+    if (!rows.length) { el.innerHTML = `<div class="news-card">No archived stories in this window — run a few searches first.</div>`; return; }
+    const bar = (v, color) => `<span class="src-bar"><i style="width:${Math.round(v * 100)}%; background:${color};"></i></span> <span class="dim">${Math.round(v * 100)}%</span>`;
+    el.innerHTML = `
+      <div class="panel">
+        <div class="muted" style="font-size:11px; line-height:1.6; margin-bottom:10px;">
+          ${d.stories} stories in the last ${d.hours}h. <b>Reliability</b> = ${esc(d.method)}.<br>
+          ${(d.caveats || []).map(c => "⚠ " + esc(c)).join("<br>")}
+        </div>
+        <table class="src-table">
+          <tr><th>OUTLET</th><th>LIST</th><th>STORIES</th><th>CORROBORATED</th><th>VERIFIED</th><th>DISPUTED</th><th>SOLO</th><th>RELIABILITY</th></tr>
+          ${rows.map(r => `<tr>
+            <td><b>${esc(r.domain)}</b>${r.sample_note ? ` <span class="dim" style="font-size:9px;">${esc(r.sample_note)}</span>` : ""}</td>
+            <td><span class="pill ${r.list}">${r.list.toUpperCase()}</span></td>
+            <td>${r.stories} <span class="dim">(${r.appearances} articles)</span></td>
+            <td>${bar(r.corroboration_rate, "var(--cyan)")}</td>
+            <td>${bar(r.verified_rate, "var(--green)")}</td>
+            <td>${bar(r.disputed_rate, "var(--orange)")}</td>
+            <td>${bar(r.solo_rate, "var(--dim)")}</td>
+            <td><b style="color:${r.reliability >= 0.7 ? "var(--green)" : r.reliability >= 0.4 ? "var(--amber)" : "var(--red)"};">${r.reliability.toFixed(2)}</b></td>
+          </tr>`).join("")}
+        </table>
+      </div>`;
+  } catch (e) { el.innerHTML = `<div class="news-card low">❌ ${esc(e.message)}</div>`; }
+}
+document.getElementById("sourcesBtn")?.addEventListener("click", loadSources);
 
 // ───── COUNTRIES ─────
 const countrySelect = document.getElementById("countrySelect");
@@ -1145,8 +1184,9 @@ function plotStories(stories) {
   if (empty) empty.style.display = geo.length ? "none" : "flex";
   if (!geo.length) return;
 
+  // group by place when known (city precision), else by country centroid
   const byCountry = {};
-  geo.forEach(s => { (byCountry[s.geo.country] = byCountry[s.geo.country] || { geo: s.geo, stories: [] }).stories.push(s); });
+  geo.forEach(s => { const k = s.geo.place ? s.geo.place + "|" + s.geo.country : s.geo.country; (byCountry[k] = byCountry[k] || { geo: s.geo, stories: [] }).stories.push(s); });
 
   Object.values(byCountry).forEach(({ geo: g, stories: list }) => {
     const top = list.reduce((a, b) => rank(b.confidence) > rank(a.confidence) ? b : a, list[0]);
@@ -1164,7 +1204,7 @@ function plotStories(stories) {
       .addTo(storyLayer)
       .bindPopup(`
         <div style="font-family:'Courier New',monospace; min-width:240px;">
-          <div style="color:${color}; font-weight:bold; font-size:13px; margin-bottom:4px;">${esc(g.country)} · ${list.length} stor${list.length === 1 ? "y" : "ies"}
+          <div style="color:${color}; font-weight:bold; font-size:13px; margin-bottom:4px;">${g.place ? esc(g.place) + ", " : ""}${esc(g.country)} · ${list.length} stor${list.length === 1 ? "y" : "ies"}${g.precision === "city" ? ' <span style="font-size:9px; opacity:.7;">CITY</span>' : ""}
             ${COUNTRY_LIST.includes(g.country) ? `<a href="#/countries/${encodeURIComponent(g.country)}" style="font-size:10px; margin-left:6px;">DOSSIER ↗</a>` : ""}</div>
           ${items}${list.length > 5 ? `<div class="dim" style="font-size:10px;">+${list.length - 5} more</div>` : ""}
         </div>`);
@@ -1225,7 +1265,9 @@ async function loadRuntimeStats() {
     set("llmCost", "$" + (l.cost_usd ?? 0).toFixed(3) + (l.cost_is_estimate ? "~" : ""));
     set("cacheHit", p.searches ? Math.round((p.cache_hits || 0) / p.searches * 100) + "%" : "—");
     const note = document.getElementById("statsNote");
-    if (note) note.textContent = `since start ${Math.round((s.uptime_s || 0) / 60)} min · model ${s.model || "?"} · avg LLM ${l.avg_ms || 0} ms · ${l.errors || 0} LLM errors · /metrics for Prometheus`;
+    const b = s.budget || {};
+    if (note) note.textContent = `since start ${Math.round((s.uptime_s || 0) / 60)} min · model ${s.model || "?"} · avg LLM ${l.avg_ms || 0} ms · ${l.errors || 0} LLM errors` +
+      (b.limit_usd ? ` · budget $${(b.spent_today_usd || 0).toFixed(3)} / $${b.limit_usd} today${b.blocked_calls_today ? " · " + b.blocked_calls_today + " blocked" : ""}` : "") + " · /metrics for Prometheus";
   } catch (e) { set("llmCalls", "—"); set("llmTokens", "—"); set("llmCost", "—"); set("cacheHit", "—"); }
 }
 setInterval(loadRuntimeStats, 30000);
@@ -1375,10 +1417,11 @@ function paletteCommands(text) {
   if (["news", "search", "n", "s"].includes(verb) && rest) out.push({ label: `📰 Search “${rest}”`, hint: "news feed", run: () => { showScreen("news"); searchNews(rest); } });
   if (["graph", "g"].includes(verb)) out.push({ label: `🕸️ Knowledge graph${rest ? " for “" + rest + "”" : ""}`, hint: "graph", run: () => openGraphFor(rest) });
   if (["brief", "sitrep", "b"].includes(verb)) out.push({ label: "🗞️ Daily intelligence brief", hint: "brief", run: () => showScreen("brief") });
+  if (["sources", "outlets", "reliability"].includes(verb)) out.push({ label: "📡 Outlet reliability", hint: "sources", run: () => showScreen("sources") });
   if (["theme", "light", "dark"].includes(verb)) out.push({ label: "◐ Toggle light / dark theme", hint: "theme", run: toggleTheme });
   if (["motion", "animations", "calm"].includes(verb)) out.push({ label: "◴ Toggle animations", hint: "motion", run: toggleMotion });
   if (["go", "open"].includes(verb) || !out.length) {
-    const screens = { home: "🌍 Threat grid", news: "📰 News feed", brief: "🗞️ Brief", graph: "🕸️ Graph", countries: "🗂️ Countries", leaders: "👤 Leaders", compare: "⚔️ Compare", nuclear: "☢️ Nuclear", alliances: "🤝 Alliances" };
+    const screens = { home: "🌍 Threat grid", news: "📰 News feed", brief: "🗞️ Brief", graph: "🕸️ Graph", sources: "📡 Sources", countries: "🗂️ Countries", leaders: "👤 Leaders", compare: "⚔️ Compare", nuclear: "☢️ Nuclear", alliances: "🤝 Alliances" };
     Object.entries(screens).filter(([k, v]) => !ql || k.startsWith(rest.toLowerCase() || ql) || v.toLowerCase().includes(ql)).forEach(([k, v]) => out.push({ label: v, hint: "#/" + k, run: () => showScreen(k) }));
   }
   if (!verb) {

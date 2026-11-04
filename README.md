@@ -4,7 +4,13 @@
 
 > Open Source Intelligence platform that aggregates, verifies, and analyzes global military and geopolitical news using AI.
 
-## Run it
+## Run it — no keys needed
+```bash
+DEMO_MODE=true python -m uvicorn api.main:app      # → http://127.0.0.1:8000/app/  (fictional data, in-memory store)
+```
+`DEMO_MODE` runs the whole product with canned, clearly fictional data: every screen, the streamed pipeline, claims,
+graph, brief, timeline, reliability. A banner says so. It is how CI's end-to-end test drives the UI.
+
 Deploys as one container (API + frontend at `/app/`, installable on a phone via *Add to Home Screen*) — see **Deploy** below.
 Every screen has a shareable URL: `#/news?q=red%20sea`, `#/countries/India`, `#/compare/India/Pakistan`, `#/graph?q=…`, `#/brief`.
 Press **Ctrl+K** anywhere for the command palette (`dossier india`, `compare us china`, `watch iran`, `news red sea`, `brief`, `graph`, `theme`).
@@ -71,11 +77,29 @@ Every stage streamed live to the UI (SSE) · archived runs → story timeline ·
 - Side-by-side military stats
 - AI-powered winner analysis
 
+### 📡 Outlet reliability (learned, not asserted)
+- Per-domain corroboration / verified / disputed / solo rates computed from the archive, with a composite score and
+  explicit caveats (small samples flagged; VERIFIED partly depends on the trusted list). Challenge the hand-written
+  trusted list with evidence instead of opinion.
+
+### 🔔 Alert rules
+- New HIGH-confidence story (as before), **a claim became disputed**, **activity surge** (story count doubles between runs) — each a separate Telegram message.
+
+### 📍 City-level geotag
+- When a headline names a city, the marker lands on it (~120 known places) and the story shows `Kharkiv, Ukraine · city`; otherwise the country centroid as before.
+
 ### 📊 Observability
 - `GET /metrics` — Prometheus exposition: requests / latency histogram per route, LLM calls, tokens, cost (OpenRouter-reported or estimated), cache hit rate, stories, contradictions
 - `GET /api/v1/stats` — the same as JSON; the home screen shows LLM calls / tokens / cost / cache-hit live
 - `LOG_FORMAT=json` — one structured JSON line per request for Render / Loki / Datadog
 - Rate limiter can share its window across instances via `REDIS_URL` (sorted-set sliding window, falls back to memory)
+- `docker compose --profile monitoring up` → Prometheus + Grafana with a provisioned dashboard (p95 by route, 5xx, LLM cost, cache hit rate)
+
+### 🔐 Hardening (see `docs/THREAT_MODEL.md`)
+- Constant-time API-key check; `X-Forwarded-For` only honoured behind a proxy (`TRUST_PROXY`); security headers; `X-Request-ID`
+- Cost controls: per-IP limits, `PIPELINE_MAX_CONCURRENT` (503 + Retry-After), **`LLM_DAILY_BUDGET_USD` hard stop** with deterministic fallbacks, `MAX_WATCHES`, `MAX_QUERY_LENGTH`, timeouts on every outbound call
+- Prompt-injection hygiene: scraped text is delimited and declared data-not-instructions; every LLM output is structurally validated (indices range-checked, lists capped)
+- Mongo indexes ensured at startup; parallel enrichment (claims ∥ entities ∥ geotag) cuts fresh-search latency
 
 ## Tech Stack
 
@@ -199,6 +223,7 @@ start frontend\index.html
 | `GET /api/v1/export/news?q=&format=md\|json` · `GET /export/country/{name}` | Reports |
 | `GET /api/v1/country/{name}` · `/weapons/{name}/{cat}` · `/special-forces/{name}` · `/leaders` | Dossiers |
 | `GET /api/v1/stats` · `GET /metrics` | Runtime counters (JSON / Prometheus) |
+| `GET /api/v1/sources?hours=` | Outlet reliability learned from the archive |
 | `GET/POST/DELETE /api/v1/watchlist` · `POST /watchlist/run` | Watchlist |
 
 ## Key Metrics
@@ -234,8 +259,10 @@ pytest -q                       # unit tests — no network, no database needed
 python sentinel_checker.py      # HTML ids ↔ JS, routes ↔ fetch calls, imports
 python eval/run_eval.py --offline --min-clustering-f1 0.8 --min-verdict-acc 1.0
 node --check frontend/app.js
+DEMO_MODE=true EXPENSIVE_LIMIT_PER_MINUTE=100 python -m uvicorn api.main:app --port 8765 &   # then the browser test (the spec fires >8 expensive calls/min):
+node tests/e2e/ui.spec.js       # Playwright drives every screen against the demo app
 ```
-GitHub Actions (`.github/workflows/ci.yml`) runs all of these plus a Docker build.
+GitHub Actions (`.github/workflows/ci.yml`) runs all of these plus a Docker build and the end-to-end job (screenshots uploaded as an artifact).
 
 ## Docker
 
@@ -296,6 +323,10 @@ MEDIUM → 2 sources agree
 LOW    → Single source only
 CONTRADICTIONS → LLM judge: incompatible factual claims (keyword fallback)
 CLAIMS → per story: corroborated (another story states the same fact) / single-source / disputed
+
+## Design & security
+- [`docs/SYSTEM_DESIGN.md`](docs/SYSTEM_DESIGN.md) — requirements with numbers, architecture decisions and why, data model, failure/scaling analysis, what is deliberately not built.
+- [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) — assets, attackers, trust boundaries, the threat → control → residual-risk table, how to find the next vulnerability, pre-deploy checklist.
 
 ## Honest limitations
 - Claims, entities, geotags, contradictions and the brief are LLM outputs: type-checked, index-validated and fail-soft, but not ground truth. The eval set is synthetic and small (regression guard, not a benchmark).

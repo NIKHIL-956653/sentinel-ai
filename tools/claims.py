@@ -11,7 +11,7 @@ Output on every story:
 
 Fail-soft: any LLM error → `claims` = [] on every story. The parser is pure and unit-tested.
 """
-from tools.llm import chat_json, LLMError
+from tools.llm import chat_json, LLMError, untrusted, UNTRUSTED_NOTE
 
 MAX_CLAIMS_PER_STORY = 3
 
@@ -19,7 +19,7 @@ MAX_CLAIMS_PER_STORY = 3
 def _snippet(story: dict, n: int = 300) -> str:
     arts = story.get("articles") or []
     if arts and arts[0].get("content"):
-        return arts[0]["content"][:n].replace("\n", " ")
+        return untrusted(arts[0]["content"], n)
     return ""
 
 
@@ -94,8 +94,9 @@ def extract_claims(stories: list) -> list:
     for i, s in enumerate(stories):
         title = (s.get("titles") or ["?"])[0]
         snip = _snippet(s)
-        lines.append(f"[{i}] {title}" + (f" — {snip}" if snip else ""))
+        lines.append(f"[{i}] {untrusted(title, 200)}" + (f" — {snip}" if snip else ""))
     prompt = f"""You are a fact-checking analyst. Below are news stories about one topic, each with an index.
+{UNTRUSTED_NOTE}
 
 For EACH story extract 1 to {MAX_CLAIMS_PER_STORY} atomic, checkable factual claims (who did what, numbers,
 dates, places). Then, for each claim, list the indices of OTHER stories whose text supports the same

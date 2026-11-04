@@ -257,7 +257,7 @@ def test_news_stream_emits_stages_then_result(client, monkeypatch):
         return {"status": "verified", "fresh": True, "query": query, "total_articles": 1, "total_stories": 1,
                 "contradictions": [], "results": [{"titles": ["t"], "confidence": "HIGH"}], "claim_summary": {}}
     monkeypatch.setattr(news_route, "run_news_query", fake_run)
-    with c.stream("POST", "/api/v1/news/stream", json={"query": "q"}) as r:
+    with c.stream("POST", "/api/v1/news/stream", json={"query": "qq"}) as r:
         assert r.status_code == 200 and r.headers["content-type"].startswith("text/event-stream")
         body = "".join(r.iter_text())
     events = [blk.split("\n")[0].replace("event: ", "") for blk in body.strip().split("\n\n")]
@@ -267,7 +267,7 @@ def test_news_stream_emits_stages_then_result(client, monkeypatch):
 
     def none(query, cache_hours=1, on_stage=None): raise news_route.NoArticles(query)
     monkeypatch.setattr(news_route, "run_news_query", none)
-    with c.stream("POST", "/api/v1/news/stream", json={"query": "q"}) as r:
+    with c.stream("POST", "/api/v1/news/stream", json={"query": "qq"}) as r:
         body = "".join(r.iter_text())
     assert "event: error" in body and '"status": 404' in body
 

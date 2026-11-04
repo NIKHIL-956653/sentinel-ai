@@ -5,7 +5,7 @@ One LLM call per search: the model reads every headline and returns, for each st
 the country the event is about — restricted to names in COUNTRY_COORDS so the result is always
 plottable. Fail-soft: any error → no geo on stories, map shows nothing extra.
 """
-from tools.llm import chat_json, LLMError
+from tools.llm import chat_json, LLMError, untrusted, UNTRUSTED_NOTE
 
 # Approximate geographic centroids (degrees). Good enough to place a marker on a world map.
 COUNTRY_COORDS = {
@@ -45,6 +45,38 @@ COUNTRY_COORDS = {
     "Persian Gulf": (26.5, 51.5), "Mediterranean Sea": (35.0, 18.0), "Arctic": (80.0, 0.0),
 }
 
+# Cities / hotspots that headlines name directly. Precision "city" beats the country centroid.
+CITY_COORDS = {
+    "Kyiv": (50.45, 30.52), "Kharkiv": (49.99, 36.23), "Odesa": (46.48, 30.73), "Odessa": (46.48, 30.73),
+    "Donetsk": (48.02, 37.80), "Zaporizhzhia": (47.84, 35.14), "Kherson": (46.64, 32.62), "Lviv": (49.84, 24.03),
+    "Moscow": (55.76, 37.62), "Sevastopol": (44.62, 33.52), "Belgorod": (50.60, 36.59), "Kursk": (51.73, 36.19),
+    "Gaza City": (31.50, 34.47), "Rafah": (31.29, 34.25), "Khan Younis": (31.34, 34.31), "Tel Aviv": (32.08, 34.78),
+    "Jerusalem": (31.77, 35.21), "Haifa": (32.79, 34.99), "Beirut": (33.89, 35.50), "Tyre": (33.27, 35.20),
+    "Damascus": (33.51, 36.29), "Aleppo": (36.20, 37.16), "Idlib": (35.93, 36.63), "Baghdad": (33.34, 44.40),
+    "Mosul": (36.34, 43.13), "Erbil": (36.19, 44.01), "Tehran": (35.69, 51.39), "Isfahan": (32.65, 51.68),
+    "Natanz": (33.51, 51.92), "Bandar Abbas": (27.18, 56.27), "Sanaa": (15.37, 44.19), "Aden": (12.79, 45.02),
+    "Hodeidah": (14.80, 42.95), "Riyadh": (24.71, 46.68), "Abu Dhabi": (24.45, 54.38), "Dubai": (25.20, 55.27),
+    "Doha": (25.29, 51.53), "Kabul": (34.56, 69.21), "Islamabad": (33.69, 73.04), "Karachi": (24.86, 67.01),
+    "Lahore": (31.55, 74.34), "New Delhi": (28.61, 77.21), "Srinagar": (34.08, 74.80), "Mumbai": (19.08, 72.88),
+    "Beijing": (39.90, 116.40), "Shanghai": (31.23, 121.47), "Taipei": (25.03, 121.57), "Hong Kong": (22.32, 114.17),
+    "Pyongyang": (39.02, 125.75), "Seoul": (37.57, 126.98), "Tokyo": (35.68, 139.69), "Okinawa": (26.33, 127.80),
+    "Manila": (14.60, 120.98), "Hanoi": (21.03, 105.85), "Khartoum": (15.50, 32.56), "Port Sudan": (19.62, 37.22),
+    "Tripoli": (32.90, 13.18), "Benghazi": (32.12, 20.07), "Mogadishu": (2.05, 45.32), "Nairobi": (-1.29, 36.82),
+    "Addis Ababa": (9.02, 38.75), "Niamey": (13.51, 2.11), "Bamako": (12.64, -8.00), "Ouagadougou": (12.37, -1.52),
+    "Goma": (-1.68, 29.22), "Kinshasa": (-4.32, 15.31), "Caracas": (10.48, -66.90), "Bogotá": (4.71, -74.07),
+    "Bogota": (4.71, -74.07), "Mexico City": (19.43, -99.13), "Port-au-Prince": (18.59, -72.31), "Havana": (23.11, -82.37),
+    "Washington": (38.91, -77.04), "Washington, D.C.": (38.91, -77.04), "New York": (40.71, -74.01), "London": (51.51, -0.13),
+    "Paris": (48.86, 2.35), "Berlin": (52.52, 13.41), "Brussels": (50.85, 4.35), "Warsaw": (52.23, 21.01),
+    "Vilnius": (54.69, 25.28), "Kaliningrad": (54.71, 20.51), "Minsk": (53.90, 27.57), "Ankara": (39.93, 32.86),
+    "Istanbul": (41.01, 28.98), "Athens": (37.98, 23.73), "Nicosia": (35.19, 33.38), "Belgrade": (44.79, 20.45),
+    "Pristina": (42.66, 21.17), "Chisinau": (47.01, 28.86), "Tbilisi": (41.72, 44.79), "Yerevan": (40.18, 44.51),
+    "Baku": (40.41, 49.87), "Stepanakert": (39.82, 46.75), "Tashkent": (41.30, 69.24), "Astana": (51.17, 71.43),
+    "Naypyidaw": (19.76, 96.08), "Yangon": (16.87, 96.20), "Dhaka": (23.81, 90.41), "Colombo": (6.93, 79.85),
+    "Canberra": (-35.28, 149.13), "Darwin": (-12.46, 130.84), "Guam": (13.44, 144.79), "Diego Garcia": (-7.31, 72.41),
+    "Djibouti City": (11.59, 43.15), "Suez": (29.97, 32.55), "Cairo": (30.04, 31.24),
+}
+_CITY_LOWER = {k.lower(): k for k in CITY_COORDS}
+
 ALIASES = {
     "usa": "United States", "us": "United States", "u.s.": "United States", "america": "United States",
     "uk": "United Kingdom", "britain": "United Kingdom", "united arab emirates": "UAE",
@@ -66,12 +98,18 @@ def normalise(name: str):
     return key
 
 
-def geo_for(name: str):
+def geo_for(name: str, place: str | None = None):
+    """Country centroid, or the named city's coordinates when we know it (precision: city)."""
     key = normalise(name)
     if not key:
         return None
     lat, lng = COUNTRY_COORDS[key]
-    return {"country": key, "lat": lat, "lng": lng}
+    geo = {"country": key, "lat": lat, "lng": lng, "precision": "country", "place": None}
+    if isinstance(place, str) and place.strip():
+        city = _CITY_LOWER.get(place.strip().lower())
+        if city:
+            geo.update(lat=CITY_COORDS[city][0], lng=CITY_COORDS[city][1], precision="city", place=city)
+    return geo
 
 
 def parse_geotags(raw, n_stories: int) -> dict:
@@ -86,7 +124,7 @@ def parse_geotags(raw, n_stories: int) -> dict:
             continue
         if not (0 <= i < n_stories) or i in out:
             continue
-        geo = geo_for(item.get("country"))
+        geo = geo_for(item.get("country"), item.get("place"))
         if geo:
             out[i] = geo
     return out
@@ -98,20 +136,22 @@ def geotag_stories(stories: list) -> list:
         s.setdefault("geo", None)
     if not stories:
         return stories
-    lines = [f"[{i}] {s['titles'][0]}" for i, s in enumerate(stories) if s.get("titles")]
+    lines = [f"[{i}] {untrusted(s['titles'][0], 200)}" for i, s in enumerate(stories) if s.get("titles")]
     prompt = f"""For each news headline below, name the ONE country or region the event is primarily
-located in. Use ONLY names from this list (exact spelling): {", ".join(COUNTRY_COORDS.keys())}.
+located in. {UNTRUSTED_NOTE} Use ONLY names from this list (exact spelling): {", ".join(COUNTRY_COORDS.keys())}.
+If the headline names a specific city or town, add it as "place" (most common English name); otherwise omit "place".
 Skip a headline if the location is unclear or global.
 
 Headlines:
 {chr(10).join(lines)}
 
-Return ONLY a JSON array: [{{"i": <index>, "country": "<name from list>"}}]"""
+Return ONLY a JSON array: [{{"i": <index>, "country": "<name from list>", "place": "<city or omit>"}}]"""
     try:
         tags = parse_geotags(chat_json(prompt, max_tokens=500), len(stories))
         for i, geo in tags.items():
             stories[i]["geo"] = geo
-        print(f"🗺️  geotagged {len(tags)}/{len(stories)} stories")
+        cities = sum(1 for g in tags.values() if g.get("precision") == "city")
+        print(f"🗺️  geotagged {len(tags)}/{len(stories)} stories ({cities} at city precision)")
     except LLMError as e:
         print(f"⚠️ geotag skipped: {e}")
     return stories

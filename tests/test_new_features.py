@@ -164,12 +164,12 @@ def test_news_route_uses_service_and_returns_geo(monkeypatch):
             "contradictions": [], "results": [{"titles": ["t"], "confidence": "HIGH", "geo": {"country": "Iran", "lat": 32.4, "lng": 53.7}}]}
     monkeypatch.setattr(news_route, "run_news_query", lambda q, cache_hours=1: fake)
     c = TestClient(main.app)
-    r = c.post("/api/v1/news", json={"query": "q"})
+    r = c.post("/api/v1/news", json={"query": "qq"})
     assert r.status_code == 200 and r.json()["results"][0]["geo"]["country"] == "Iran"
 
     def none(q, cache_hours=1): raise news_route.NoArticles(q)
     monkeypatch.setattr(news_route, "run_news_query", none)
-    assert c.post("/api/v1/news", json={"query": "q"}).status_code == 404
+    assert c.post("/api/v1/news", json={"query": "qq"}).status_code == 404
 
 
 def test_watchlist_routes(monkeypatch):

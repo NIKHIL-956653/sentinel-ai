@@ -29,6 +29,10 @@ services:
         value: "24"
       - key: LOG_FORMAT
         value: json
+      - key: TRUST_PROXY
+        value: "true"            # Render terminates TLS and sets X-Forwarded-For
+      - key: LLM_DAILY_BUDGET_USD
+        value: "2"               # hard daily ceiling on OpenRouter spend; raise once you trust the traffic
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: TELEGRAM_CHAT_ID

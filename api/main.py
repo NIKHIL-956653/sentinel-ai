@@ -9,8 +9,8 @@ from api.routes.country import router as country_router
 from api.security import protect, limiter_backend
 from api.logging_setup import configure as configure_logging, request_logger
 from api import metrics
-from config import ALLOWED_ORIGINS, SENTINEL_API_KEY, PUBLIC_SITE_URL, APP_VERSION
-from database import mongo_available
+from config import ALLOWED_ORIGINS, SENTINEL_API_KEY, PUBLIC_SITE_URL, APP_VERSION, DEMO_MODE
+from database import mongo_available, ensure_indexes
 from services.watchlist import start_scheduler
 from services import brief as brief_svc
 
@@ -20,6 +20,10 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     configure_logging()
+    if DEMO_MODE:
+        print("🎭 DEMO_MODE: fictional data, no API keys, in-memory store")
+    if ensure_indexes():
+        print("🗄️  MongoDB indexes ensured")
     if start_scheduler():
         print("⏰ watchlist scheduler started")
     if brief_svc.start_scheduler():
@@ -62,6 +66,7 @@ async def root():
         "database": "MongoDB ✅" if mongo_available() else "MongoDB unreachable ⚠️",
         "auth": "api-key required" if SENTINEL_API_KEY else "open (set SENTINEL_API_KEY to protect)",
         "rate_limiter": limiter_backend(),
+        "demo_mode": DEMO_MODE,
         "endpoints": {
             "app": "/app",
             "news": "/api/v1/news",
@@ -71,6 +76,7 @@ async def root():
             "brief": "/api/v1/brief",
             "export": "/api/v1/export/news?q=&format=md",
             "stats": "/api/v1/stats",
+            "sources": "/api/v1/sources",
             "metrics": "/metrics",
             "health": "/api/v1/health",
             "recent": "/api/v1/recent",
@@ -95,7 +101,8 @@ async def app_config_js():
     body = (f"window.SENTINEL_API_KEY = {json.dumps(SENTINEL_API_KEY)};\n"
             f"window.SENTINEL_API_BASE = \"\";  /* same origin */\n"
             f"window.SENTINEL_PUBLIC_URL = {json.dumps(PUBLIC_SITE_URL)};\n"
-            f"window.SENTINEL_VERSION = {json.dumps(APP_VERSION)};\n")
+            f"window.SENTINEL_VERSION = {json.dumps(APP_VERSION)};\n"
+            f"window.SENTINEL_DEMO = {json.dumps(DEMO_MODE)};\n")
     return Response(body, media_type="application/javascript",
                     headers={"Cache-Control": "no-store"})
 
